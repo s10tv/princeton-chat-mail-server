@@ -26,7 +26,7 @@ app.post('/inbound', (req, res) => {
   return Iron.send({
     taskName: 'job_postmark_post_email_handler',
     payload: { postmarkInfo: req.body },
-    options: { priority: 2 }
+    options: { priority: 0 }
   }).then(() => {
     res.sendStatus(200);
   })
