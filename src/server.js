@@ -33,6 +33,12 @@ function handleError(message, res) {
 }
 
 app.use(bodyParser.json());
+
+app.post('/no-op', (req, res) => {
+  console.log(req.body);
+  return res.sendStatus(200);  
+})
+
 app.post('/postmark-message-reply', (req, res) => {
   const postmarkInfo = req.body;
 
