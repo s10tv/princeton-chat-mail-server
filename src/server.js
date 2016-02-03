@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 app.post('/inbound', (req, res) => {
   return Iron.send({
     taskName: 'job_postmark_post_email_handler',
-    payload: { postmarkinfo: req.body },
+    payload: { postmarkInfo: req.body },
     options: {}
   }).then(() => {
     res.sendStatus(200);
