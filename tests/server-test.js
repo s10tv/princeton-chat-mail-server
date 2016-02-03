@@ -2,30 +2,50 @@ import { expect } from 'chai'
 import rewire from 'rewire'
 import request from 'supertest'
 
-import MockIronWorker from './mocks/MockIronWorker'
+import MockEmailSender from './mocks/MockEmailSender'
 
 const app = rewire('../src/server')
-const Iron =  new MockIronWorker()
-
-app.__set__('Iron', Iron)
 
 describe('Server', () => {
-  it('should correctly forward incoming requests to ironworker', (done) => {
+  let Sender = null
+
+  beforeEach(() => {
+    Sender =  new MockEmailSender()
+    app.__set__('Sender', Sender)
+  })
+
+  it('should handle /postmark-message-reply', (done) => {
     const POSTMARK_DATA = { test: 'true' }
 
-    request('http://localhost:3000')
-      .post('/inbound')
+    request('http://localhost:5000')
+      .post('/postmark-message-reply')
       .send(POSTMARK_DATA)
       .expect(200)
       .end(function(err, res) {
-        expect(Iron.requests.length).to.equal(1);
-        const [request] = Iron.requests;
-
-        expect(request.taskName).to.equal('job_postmark_post_email_handler');
-        expect(request.payload).to.deep.equal(POSTMARK_DATA);
-        expect(request.options).to.deep.equal({});
-
+        expect(Sender.postmarkInput).to.deep.equal(POSTMARK_DATA);
         done()
       });
   })
+
+  it('should handle /web-post', (done) => {
+    request('http://localhost:5000')
+      .post('/web-post')
+      .send({ postId: 'post-id' })
+      .expect(200)
+      .end(function(err, res) {
+        expect(Sender.postId).to.equal('post-id');
+        done()
+      });
+  });
+
+  it('should handle /web-message', (done) => {
+    request('http://localhost:5000')
+      .post('/web-message')
+      .send({ messageId: 'message-id' })
+      .expect(200)
+      .end(function(err, res) {
+        expect(Sender.messageId).to.equal('message-id');
+        done()
+      });
+  });
 })
