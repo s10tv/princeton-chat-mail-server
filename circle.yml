@@ -1,0 +1,30 @@
+dependencies:
+   cache_directories:
+     - mongodb-linux-x86_64-2.6.4
+   pre:
+     - if [[ ! -d mongodb-linux-x86_64-2.6.4 ]]; then wget http://downloads.mongodb.org/linux/mongodb-linux-x86_64-2.6.4.tgz && tar xvzf mongodb-linux-x86_64-2.6.4.tgz; fi
+     - sudo /etc/init.d/mongodb stop
+     - sudo cp mongodb-linux-x86_64-2.6.4/bin/* /usr/bin
+     - sudo /etc/init.d/mongodb start
+
+machine:
+  node:
+    version: 4.0.0
+
+test:
+  override:
+    - npm test
+
+deployment:
+  dev:
+    branch: master
+    heroku:
+      appname: princeton-chat-mail-server-dev
+  prod:
+    branch: prod
+    heroku:
+      appname: princeton-chat-mail-server
+
+notify:
+  webhooks:
+    - url: https://hooks.slack.com/services/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
