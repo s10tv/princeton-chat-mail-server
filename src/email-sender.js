@@ -82,7 +82,9 @@ export default class EmailSender {
         }
 
         const emailContent = this.__addFooter({
-          content
+          content,
+          post: this.post,
+          sender: this.senderUser,
         });
 
         return {
@@ -124,7 +126,9 @@ export default class EmailSender {
 
         const fromName = this.parseDisplayName(this.messageOwner);
         const emailContent = this.__addFooter({
-          content: this.message.content
+          content: this.message.content,
+          post: this.post,
+          sender: this.messageOwner,
         });
 
         return {
@@ -181,7 +185,9 @@ export default class EmailSender {
         }
 
         const emailContent = this.__addFooter({
-          content: this.post.content
+          content: this.post.content,
+          post: this.post,
+          sender: this.postOwner,
         });
 
         const fromName = this.parseDisplayName(this.postOwner);
@@ -200,15 +206,19 @@ export default class EmailSender {
     })
   }
 
-  __addFooter({ content }) {
+  __addFooter({ content, post, sender }) {
+
+    const [topic] = post.topicIds
+    const [{ emailAddress }] = sender.emails;
+
     return `
       <p>${content}</p>
-      <p>
+      <p style="padding-top: 15px">
         --<br />
-        Reply to this email directly or <a href='#'>View it on Princeton.Chat</a><br />
-        You can also <a href='#'>Unfollow</a> this thread or <a href='#'>Edit topics I follow</a><br />
+        Reply to this email directly or <a href='/${topic._id}/${post._id}'>View it on Princeton.Chat</a><br />
+        You can also <a href='/${sender._id}/unfollow'>Unfollow</a> this thread or <a href='/${sender._id}/preferences'>Edit topics I follow</a><br />
         TO privately reply to the sender, email<br />
-        <a href='#'>fwinsberg@gmail.com</a>
+        <a href='#'>${emailAddress}</a>
       </p>`
   }
 
