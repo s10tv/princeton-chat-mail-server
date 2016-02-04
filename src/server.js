@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import postmark from 'postmark'
 import bodyParser from 'body-parser'
 import { Promise } from 'es6-promise'
+import raygun from 'raygun'
 
 import logger from './logger'
 import secrets from './config/secrets'
@@ -15,6 +16,7 @@ export const app = express()
 // injectable
 let PostmarkClient = new postmark.Client(secrets.postmark.token);
 let Sender = new EmailSender(PostmarkClient, secrets.mailserver, secrets.url);
+let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
 
 mongoose.Promise = Promise
 mongoose.connect(secrets.mongo, function(err, res) {
@@ -29,12 +31,14 @@ function handleSuccess(message, res) {
   return res.sendStatus(200);
 }
 
-function handleError(message, res) {
+function handleError(err, message, res) {
   logger.error(message);
+  client.send(err, {});
   return res.sendStatus(500);
 }
 
 app.use(bodyParser.json());
+app.use(raygunClient.expressHandler);
 
 app.post('/no-op', (req, res) => {
   console.log(req.body);
@@ -45,13 +49,12 @@ app.post('/postmark-message-reply', (req, res) => {
   const postmarkInfo = req.body;
 
   logger.info('[postmark-message-reply]', postmarkInfo);
-  
   return Sender.handleEmailReply(postmarkInfo)
     .then(() => {
       return handleSuccess('Postmark-Message success', res)
     })
     .catch(err => {
-      return handleError(`Postmark-Message error: ${err.message}`, res);
+      return handleError(err, `Postmark-Message error: ${err.message}`, res);
     })
 })
 
@@ -68,7 +71,7 @@ app.post('/web-post', (req, res) => {
       return handleSuccess('Web-Post success', res)
     })
     .catch(err => {
-      return handleError(`Web-Post error: ${err.message}`, res);
+      return handleError(err, `Web-Post error: ${err.message}`, res);
     })
 })
 
@@ -85,7 +88,7 @@ app.post('/web-message', (req, res) => {
       return handleSuccess('Web-Message success', res)
     })
     .catch(err => {
-      return handleError(`Web-Message error: ${err.message}`, res);
+      return handleError(err, `Web-Message error: ${err.message}`, res);
     })
 })
 

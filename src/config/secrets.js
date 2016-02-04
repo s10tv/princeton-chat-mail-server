@@ -9,5 +9,8 @@ export default {
   postmark: {
     token: process.env.POSTMARK_TOKEN || 'ea859cd1-5add-4969-9053-b02fdd0ad956',
   },
+  raygun: {
+    key: process.env.RAYGUN_APIKEY || ''
+  },
   mailserver: process.env.MAIL_SERVER || 'dev.inbound.princeton.chat',
 }
