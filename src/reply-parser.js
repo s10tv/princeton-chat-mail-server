@@ -41,18 +41,15 @@ export default class ReplyParser {
       throw new Error(`Did not find any emails addressed to @${this.mailserver}`);
     }
 
-    const [{ MailboxHash }]  = princetonChatMailbox;
-
-    if (!MailboxHash) {
-      throw new Error('Received invalid MailboxHash from info.')
-    }
-
+    const [{ Email, MailboxHash }]  = princetonChatMailbox;
     const fromName = fromInfo.Name || 'reply@inbound.princeton.chat';
 
     return {
       fromName,
       fromEmail,
       content,
+      subject: postmarkResponse.Subject,
+      toEmail: Email,
       postId: MailboxHash,
     }
   }

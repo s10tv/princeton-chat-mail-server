@@ -4,14 +4,10 @@ var mongoose = require('mongoose')
   , uuid = require('uuid')
   , Schema = mongoose.Schema;
 
-
-var PostSchema = new Schema({
+var TopicSchema = new Schema({
   _id : String,
-  title: String,
-  content: String,
-  ownerId: String,
-  topicIds: [String],
+  displayName: String,
   followers: [FollowerSchema],
 });
 
-module.exports = mongoose.model('posts', PostSchema);
+module.exports = mongoose.model('topics', TopicSchema);

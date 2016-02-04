@@ -1,6 +1,7 @@
 import { upsert, update, find, INFO } from './common'
 import uuid from 'uuid'
 
+import Topic from './models/topic'
 import Post from './models/post'
 import Message from './models/message'
 import User from './models/user'
@@ -30,8 +31,73 @@ export default class EmailSender {
       fromName,
       fromEmail,
       postId,
+      toEmail,
+      subject,
       content } = new ReplyParser(this.mailserver).parse(postmarkInput);
 
+    if (!postId) {
+      // Possibly a new post since the email didn't come with a post id.
+      return this.__handleNePostFromEmail({ fromEmail, fromName, subject, })
+    }
+
+    // Possibly a reply to an existing post, since the message came witha  post id.
+    return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content })
+  }
+
+  __handleNewPostFromEmail({ fromEmail, fromName, subject }) {
+    const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${subject}`;
+    return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
+    .then(senderUser => {
+      this.senderUser = senderUser;
+
+      const [ topicId ] = toEmail.split('@')
+      return find(Topic, { _id: topicId })
+    })
+    .then(topics => {
+      const [ topic ] = topics;
+
+      if (!topic) {
+        const greeting = fromName && fromName.length > 0 ? `Hey ${fromName}<br /><br />,` : 'Hello!';
+        const errorEmailContent = `${greeting}
+          We just got your email to ${toEmail}, but it wasn't actually a list on Princeton.Chat.
+          Please take a look at the correct list through our
+          <a href='${secrets.url}/'>web portal</a>,
+          and reply to let us know if you run into any issues.<br /><br /><br />
+          --<br />
+          <a href='${secrets.url}'>New to Princeton.Chat</a>?
+        `
+
+        const errorEmail = {
+          From: `Princeton.Chat <notifications@princeton.chat>`,
+          To: fromEmail,
+          ReplyTo: `Princeton.Chat <hello@princeton.chat>`,
+          Subject: `[Princeton.Chat] Problem Posting RE: ${subject}`,
+          HtmlBody: errorEmailContent,
+        };
+
+        return this.__sendEmail(errorEmail)
+      }
+
+      // TODO : insert post, send out emails.
+
+      const postId = uuid.v4()
+      return upsert(Post, { _id: postId}, {
+        _id: postId,
+        title: subject,
+        content: content,
+        ownerId: this.senderUser._id,
+        topicIds: [topic._id],
+        followers: [{
+          userId: this.senderUser._id
+        }]
+      })
+      .then(() => {
+        return this.handleNewPostFromWeb(postId)
+      })
+    })
+  }
+
+  __handleMessageFromEmail({ postId, fromEmail, fromName, content }) {
     return this.__getPostInfoFromPostmark({ postId, fromEmail, fromName })
     .then(() => {
       // insert this as a message into our system
@@ -269,17 +335,9 @@ export default class EmailSender {
     }
   }
 
-  /**
-   * Sets:
-   * [eveything in post info], senderUser
-   */
-  __getPostInfoFromPostmark({ postId, fromEmail, fromName }) {
-    return this.__getPostInfo(postId)
-    .then(() => {
-      return find(User, { 'emails.address': fromEmail })
-    })
+  __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
+    return find(User, { 'emails.address': fromEmail })
     .then(users => {
-
       const [senderUser] = users;
 
       if (!senderUser) {
@@ -296,7 +354,7 @@ export default class EmailSender {
           From: `Princeton.Chat <notifications@princeton.chat>`,
           To: fromEmail,
           ReplyTo: `Princeton.Chat <hello@princeton.chat>`,
-          Subject: `[Princeton.Chat] Problem Posting RE: ${this.post.title}`,
+          Subject: errorEmailSubject,
           HtmlBody: errorEmailContent,
         };
 
@@ -308,6 +366,21 @@ export default class EmailSender {
         })
       }
 
+      return Promise.resolve(senderUser)
+    })
+  }
+
+  /**
+   * Sets:
+   * [eveything in post info], senderUser
+   */
+  __getPostInfoFromPostmark({ postId, fromEmail, fromName }) {
+    return this.__getPostInfo(postId)
+    .then(() => {
+      const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${this.post.title}`;
+      return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
+    })
+    .then(senderUser => {
       this.senderUser = senderUser;
       return Promise.resolve(true);
     })
