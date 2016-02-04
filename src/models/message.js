@@ -7,6 +7,7 @@ var MessageSchema = new Schema({
   postId: String,
   content: String,
   source: String,
+  createdAt: { type: Date, required: true, default: new Date() } 
 });
 
 module.exports = mongoose.model('messages', MessageSchema);

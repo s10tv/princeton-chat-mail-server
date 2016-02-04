@@ -41,6 +41,7 @@ export default class EmailSender {
         postId: this.post._id,
         content: content,
         source: 'email',
+        createdAt: new Date(),
       })
     })
     .then(() => {

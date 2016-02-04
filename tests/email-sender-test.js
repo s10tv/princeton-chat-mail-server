@@ -347,6 +347,7 @@ describe('EmailSender', () => {
           expect(message.ownerId).to.equal('nurym');
           expect(message.postId).to.equal('POST_ID');
           expect(message.content).to.equal('This is the reply text');
+          expect(message.createdAt).to.exist;
 
           return find(User, { _id: 'nurym' })
         })
