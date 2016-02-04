@@ -31,17 +31,18 @@ function handleSuccess(message, res) {
   return res.sendStatus(200);
 }
 
-function handleError(err, message, res) {
-  logger.error(message);
-  client.send(err, {});
-  return res.sendStatus(200);
+function handleError(err, res) {
+  logger.error(err);
+  raygunClient.send(err, {});
+  return res.sendStatus(200); // fix this. throw 400s
 }
 
 app.use(bodyParser.json());
 app.use(raygunClient.expressHandler);
 
 app.post('/no-op', (req, res) => {
-  console.log(req.body);
+  logger.info('no-op');
+  logger.info(req.body);
   return res.sendStatus(200);
 })
 
@@ -62,7 +63,7 @@ app.post('/postmark-message-reply', (req, res) => {
       return handleSuccess('Postmark-Message success', res)
     })
     .catch(err => {
-      return handleError(err, `Postmark-Message error: ${err.message}`, res);
+      return handleError(err, res);
     })
 })
 
@@ -72,8 +73,8 @@ app.post('/web-post', (req, res) => {
 
   const postId = req.body.postId;
   if (!postId) {
-    logger.error('[web-post] postId was not found in the request');
-    return res.status(400).send('postId is not found in the request');
+    let error = new Error('[web-post] postId was not found in the request');
+    return handleError(error, res)
   }
 
   logger.info(`[web-post] request with postId=${postId}`)
@@ -89,8 +90,8 @@ app.post('/web-post', (req, res) => {
 app.post('/web-message', (req, res) => {
   const messageId = req.body.messageId;
   if (!messageId) {
-    logger.error('[web-message] MessageId was not found in the request');
-    return res.status(400).send('messageId is not found in the request');
+    let error = new Error('[web-message] messageId is not found in the request');
+    return handleError(error, res)
   }
 
   logger.info(`[web-message] request with messageId=${messageId}`)
@@ -99,7 +100,7 @@ app.post('/web-message', (req, res) => {
       return handleSuccess('Web-Message success', res)
     })
     .catch(err => {
-      return handleError(err, `Web-Message error: ${err.message}`, res);
+      return handleError(err, res);
     })
 })
 

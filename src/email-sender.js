@@ -216,9 +216,9 @@ export default class EmailSender {
       <p>${content}</p>
       <p style="padding-top: 15px">
         --<br />
-        Reply to this email directly or <a href='${secrets.url}/${topicId}/${post._id}'>View it on Princeton.Chat</a><br />
-        You can also <a href='${secrets.url}/${sender._id}/unfollow'>Unfollow</a>
-          this thread or <a href='${secrets.url}/${sender._id}/preferences'>Edit topics I follow</a><br />
+        Reply to this email directly or <a href='${secrets.url}/topics/${topicId}/${post._id}'>View it on Princeton.Chat</a><br />
+        You can also <a href='${secrets.url}/unfollow/${sender._id}'>Unfollow</a>
+          this thread or <a href='${secrets.url}/preferences/${sender._id}'>Edit topics I follow</a><br />
         TO privately reply to the sender, email<br />
           <a href='mailto:${address}'>${address}</a>
       </p>`
