@@ -31,7 +31,7 @@ export default class EmailSender {
       postId,
       content } = new ReplyParser(this.mailserver).parse(postmarkInput);
 
-    return this.__getPostInfoFromPostmark({ postId, fromEmail })
+    return this.__getPostInfoFromPostmark({ postId, fromEmail, fromName })
     .then(() => {
       // insert this as a message into our system
       const messageId = uuid.v4()
@@ -259,23 +259,41 @@ export default class EmailSender {
    * Sets:
    * [eveything in post info], senderUser
    */
-  __getPostInfoFromPostmark({ postId, fromEmail }) {
-    return find(User, { 'emails.address': fromEmail })
+  __getPostInfoFromPostmark({ postId, fromEmail, fromName }) {
+    return this.__getPostInfo(postId)
+    .then(() => {
+      return find(User, { 'emails.address': fromEmail })
+    })
     .then(users => {
 
       const [senderUser] = users;
 
-      // for now, people who don't exist cannot send messages.
-      // TODO: people who are not found in our database should be created as users.
       if (!senderUser) {
-        throw new Error(`${fromEmail} is not found in our database. Aborting for now.`);
+        const greeting = fromName && fromName.length > 0 ? `Hey ${fromName}<br /><br />` : 'Hey';
+        const errorEmailContent = `${greeting}
+          Seems like your email address <b>${fromEmail}</b> was not a registered email on
+          Princeton.Chat. Please check your <a href='${secrets.url}/settings'>notification preferences</a>,
+          and reply to let us know if you run into any issues.<br /><br /><br />
+          --<br />
+          Want to <a href='${secrets.url}'>Register</a>?
+        `
+
+        const errorEmail = {
+          From: `Princeton.Chat <hello@princeton.chat>`,
+          To: fromEmail,
+          ReplyTo: `Princeton.Chat <hello@princeton.chat>`,
+          Subject: `[Princeton.Chat] Problem Posting RE: ${this.post.title}`,
+          HtmlBody: errorEmailContent,
+        };
+
+        return this.__sendBatchEmails([ errorEmail ])
+        .then(() => {
+          return Promise.reject(`${fromEmail} was not found. Sent error email`);
+        })
       }
 
       this.senderUser = senderUser;
       return Promise.resolve(true);
-    })
-    .then(() => {
-      return this.__getPostInfo(postId)
     })
   }
 

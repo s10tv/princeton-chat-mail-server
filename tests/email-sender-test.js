@@ -6,7 +6,7 @@ var mongoose = require('mongoose')
   , User = require('../src/models/user')
   , dbURI = 'mongodb://localhost:27017/test';
 
-import { find } from '../src/common.js'
+import { find, count } from '../src/common.js'
 import EmailSender from '../src/email-sender';
 import MockPostmark from './mocks/MockPostmark';
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
@@ -243,19 +243,13 @@ describe('EmailSender', () => {
     })
   })
 
-  /**
-   * Context:
-   *
-   * Qiming made a post.
-   * Diana is the only one who follows this post
-   * Nurym (not originally following post) replied to it via email
-   *
-   * Expect: a message gets generated (from nurym's reply)
-   * Expect: diana gets an email.
-   * Expect: nurym follows the post now
-   */
+
   describe('handleEmailReply', () => {
-    const postmarkClient = new MockPostmark();
+    let postmarkClient = null;
+
+    beforeEach(() => {
+      postmarkClient = new MockPostmark();
+    })
 
     beforeEach((done) => {
       new Post({
@@ -277,48 +271,101 @@ describe('EmailSender', () => {
       }).save(done)
     });
 
-    it('should attempt to send emails to through postmark', (done) => {
-      new EmailSender(postmarkClient, 'inbound.princeton.chat').handleEmailReply(INBOUND_MAIL_DATA)
-      .then(() => {
-        expect(postmarkClient.mailQueue.length).to.equal(1);
-        const [mail] = postmarkClient.mailQueue;
-        const expectedReturn = 'Princeton.Chat <reply+POST_ID_=_=diana@inbound.princeton.chat>'
-
-        expect(mail.From).to.equal('Postmarkapp Support <notifications@princeton.chat>');
-        expect(mail.CC).to.equal('diana@gmail.com');
-        expect(mail.To).to.equal(expectedReturn);
-        expect(mail.ReplyTo).to.equal(expectedReturn);
-        expect(mail.Subject).to.equal('[Princeton.Chat] RE: Post Title');
-        expect(mail.HtmlBody).to.contain('This is the reply text');
-
-        return find(Message, {})
+    /**
+     * Context:
+     *
+     * Qiming made a post.
+     * Nurym replied to it via ** an email that is not in the system **
+     *
+     * Expect: an error email gets generated to nurym.
+     * Expect: no messages to be created
+     */
+    describe('when the sender has an email that is not in the system', () => {
+      const INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
+      beforeEach((done) => {
+        INPUT.FromFull.Email = 'fake-email@gmail.com'
+        new EmailSender(postmarkClient, 'inbound.princeton.chat')
+          .handleEmailReply(INPUT)
+          .then(() => fail('should have thrown an error complaining that fake-email was not founds'))
+          .catch(err => {
+            expect(err).to.equal('fake-email@gmail.com was not found. Sent error email')
+            done()
+          })
       })
-      .then(messages => {
-        expect(messages.length).to.equal(1);
-        const [message] = messages;
 
-        expect(message._id).to.exist;
-        expect(message.ownerId).to.equal('nurym');
-        expect(message.postId).to.equal('POST_ID');
-        expect(message.content).to.equal('This is the reply text');
+      it ('should not create a new message', (done) => {
+        return count(Message, {})
+        .then(count => {
+          expect(count).to.equal(0);
+          expect(postmarkClient.mailQueue.length).to.equal(1);
+          const [ errorMail ] = postmarkClient.mailQueue;
+          expect(errorMail.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Post Title');
+          expect(errorMail.To).to.equal('fake-email@gmail.com');
+          expect(errorMail.From).to.equal('Princeton.Chat <hello@princeton.chat>');
+          expect(errorMail.ReplyTo).to.equal('Princeton.Chat <hello@princeton.chat>');
+          expect(errorMail.HtmlBody.length).to.be.greaterThan(0);
 
-        return find(User, { _id: 'nurym' })
+          done();
+        })
+        .catch(err => done(err))
       })
-      .then(users => {
-        const [ nurymUser ] = users;
-        expect(nurymUser.followingPosts.indexOf('POST_ID')).not.to.be.below(0);
+    })
 
-        return find(Post, { _id: 'POST_ID' })
-      })
-      .then(posts => {
-        const [ existingPost ] = posts;
-        const [ nurymFollower ] = existingPost.followers.filter(follower => follower.userId == 'nurym');
+    /**
+     * Context:
+     *
+     * Qiming made a post.
+     * Diana is the only one who follows this post
+     * Nurym (not originally following post) replied to it via email
+     *
+     * Expect: a message gets generated (from nurym's reply)
+     * Expect: diana gets an email.
+     * Expect: nurym follows the post now
+     */
+    describe('when the sender has an email that is in the system', () => {
+      it('should send emails to through postmark', (done) => {
+        new EmailSender(postmarkClient, 'inbound.princeton.chat').handleEmailReply(INBOUND_MAIL_DATA)
+        .then(() => {
+          expect(postmarkClient.mailQueue.length).to.equal(1);
+          const [mail] = postmarkClient.mailQueue;
+          const expectedReturn = 'Princeton.Chat <reply+POST_ID_=_=diana@inbound.princeton.chat>'
 
-        expect(nurymFollower).to.exist;
-        done();
-      })
-      .catch(err => {
-        return done(err);
+          expect(mail.From).to.equal('Postmarkapp Support <notifications@princeton.chat>');
+          expect(mail.CC).to.equal('diana@gmail.com');
+          expect(mail.To).to.equal(expectedReturn);
+          expect(mail.ReplyTo).to.equal(expectedReturn);
+          expect(mail.Subject).to.equal('[Princeton.Chat] RE: Post Title');
+          expect(mail.HtmlBody).to.contain('This is the reply text');
+
+          return find(Message, {})
+        })
+        .then(messages => {
+          expect(messages.length).to.equal(1);
+          const [message] = messages;
+
+          expect(message._id).to.exist;
+          expect(message.ownerId).to.equal('nurym');
+          expect(message.postId).to.equal('POST_ID');
+          expect(message.content).to.equal('This is the reply text');
+
+          return find(User, { _id: 'nurym' })
+        })
+        .then(users => {
+          const [ nurymUser ] = users;
+          expect(nurymUser.followingPosts.indexOf('POST_ID')).not.to.be.below(0);
+
+          return find(Post, { _id: 'POST_ID' })
+        })
+        .then(posts => {
+          const [ existingPost ] = posts;
+          const [ nurymFollower ] = existingPost.followers.filter(follower => follower.userId == 'nurym');
+
+          expect(nurymFollower).to.exist;
+          done();
+        })
+        .catch(err => {
+          return done(err);
+        })
       })
     })
   })
