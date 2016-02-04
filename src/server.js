@@ -59,6 +59,8 @@ app.post('/postmark-message-reply', (req, res) => {
 })
 
 app.post('/web-post', (req, res) => {
+  logger.info('web-post', req.body);
+
   const postId = req.body.postId;
   if (!postId) {
     logger.error('[web-post] postId was not found in the request');
