@@ -50,7 +50,7 @@ app.post('/postmark-message-reply', (req, res) => {
 
   // for some reason, replies to emails come with an extra email from notifications@ to our
   // reply email. If this happens, omit it.
-  if (postmarkInfo.From && postmarkInfo.from === 'notifications@princeton.chat') {
+  if (postmarkInfo.From && postmarkInfo.From === 'notifications@princeton.chat') {
     return res.send(200);
   }
 
