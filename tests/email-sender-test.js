@@ -301,7 +301,7 @@ describe('EmailSender', () => {
           const [ errorMail ] = postmarkClient.mailQueue;
           expect(errorMail.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Post Title');
           expect(errorMail.To).to.equal('fake-email@gmail.com');
-          expect(errorMail.From).to.equal('Princeton.Chat <hello@princeton.chat>');
+          expect(errorMail.From).to.equal('Princeton.Chat <notifications@princeton.chat>');
           expect(errorMail.ReplyTo).to.equal('Princeton.Chat <hello@princeton.chat>');
           expect(errorMail.HtmlBody.length).to.be.greaterThan(0);
 

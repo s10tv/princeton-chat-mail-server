@@ -241,6 +241,18 @@ export default class EmailSender {
     });
   }
 
+  __sendEmail(email) {
+    return new Promise((resolve, reject) => {
+      this.postmarkClient.sendEmail(email, (err, res) => {
+        if (err) {
+          return reject(err);
+        }
+
+        return resolve(res);
+      })
+    })
+  }
+
   __generateHash({ id, user }) {
     return `${id}_=_=${user._id}`
   }
@@ -281,7 +293,7 @@ export default class EmailSender {
         `
 
         const errorEmail = {
-          From: `Princeton.Chat <hello@princeton.chat>`,
+          From: `Princeton.Chat <notifications@princeton.chat>`,
           To: fromEmail,
           ReplyTo: `Princeton.Chat <hello@princeton.chat>`,
           Subject: `[Princeton.Chat] Problem Posting RE: ${this.post.title}`,
@@ -290,7 +302,7 @@ export default class EmailSender {
 
         logger.info(errorEmail);
 
-        return this.__sendBatchEmails([ errorEmail ])
+        return this.__sendEmail(errorEmail)
         .then(() => {
           return Promise.reject(`${fromEmail} was not found. Sent error email`);
         })
