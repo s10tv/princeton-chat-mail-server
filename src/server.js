@@ -34,7 +34,7 @@ function handleSuccess(message, res) {
 function handleError(err, message, res) {
   logger.error(message);
   client.send(err, {});
-  return res.sendStatus(500);
+  return res.sendStatus(200);
 }
 
 app.use(bodyParser.json());
