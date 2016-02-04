@@ -5,6 +5,7 @@ import Post from './models/post'
 import Message from './models/message'
 import User from './models/user'
 import ReplyParser from './reply-parser'
+import secrets from './config/secrets'
 
 var Promise = require('es6-promise').Promise
   , mongoose = require('mongoose')
