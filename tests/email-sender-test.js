@@ -149,7 +149,7 @@ describe('EmailSender', () => {
         .then(() => {
           expect(postmarkClient.mailQueue.length).to.equal(1);
           const [mail] = postmarkClient.mailQueue;
-          const expectedReturn = 'Princeton.Chat <reply+test-post-two_=_=tonyx@inbound.princeton.chat>';
+          const expectedReturn = 'Princeton.Chat <reply+test-post-two@inbound.princeton.chat>';
 
           expect(mail.From).to.equal('Qiming Fang <notifications@princeton.chat>');
           expect(mail.CC).to.equal('tonyx@gmail.com');
@@ -226,7 +226,7 @@ describe('EmailSender', () => {
         .then(() => {
           expect(postmarkClient.mailQueue.length).to.equal(1);
           const [mail] = postmarkClient.mailQueue;
-          const expectedReturn = 'Princeton.Chat <reply+super-bowl_=_=tonyx@inbound.princeton.chat>'
+          const expectedReturn = 'Princeton.Chat <reply+super-bowl@inbound.princeton.chat>'
 
           expect(mail.From).to.equal('Diana Chau <notifications@princeton.chat>');
           expect(mail.CC).to.equal('tonyx@gmail.com');
@@ -328,7 +328,7 @@ describe('EmailSender', () => {
         .then(() => {
           expect(postmarkClient.mailQueue.length).to.equal(1);
           const [mail] = postmarkClient.mailQueue;
-          const expectedReturn = 'Princeton.Chat <reply+POST_ID_=_=diana@inbound.princeton.chat>'
+          const expectedReturn = 'Princeton.Chat <reply+POST_ID@inbound.princeton.chat>'
 
           expect(mail.From).to.equal('Postmarkapp Support <notifications@princeton.chat>');
           expect(mail.CC).to.equal('diana@gmail.com');

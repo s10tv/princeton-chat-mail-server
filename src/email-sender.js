@@ -82,7 +82,7 @@ export default class EmailSender {
           return Promise.resolve(true);
         }
 
-        const hash = this.__generateHash({ id: postId, user });
+        const hash = postId;
         const emailContent = this.__addFooter({
           content,
           post: this.post,
@@ -127,7 +127,7 @@ export default class EmailSender {
         const [ email ] =  user.emails;
 
         const fromName = this.parseDisplayName(this.messageOwner);
-        const hash = this.__generateHash({ id: this.post._id, user });
+        const hash = this.post._id;
         const emailContent = this.__addFooter({
           content: this.message.content,
           post: this.post,
@@ -194,7 +194,7 @@ export default class EmailSender {
         });
 
         const fromName = this.parseDisplayName(this.postOwner);
-        const hash = this.__generateHash({ id: this.post._id, user });
+        const hash = this.post._id;
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
