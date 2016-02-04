@@ -6,6 +6,7 @@ import Message from './models/message'
 import User from './models/user'
 import ReplyParser from './reply-parser'
 import secrets from './config/secrets'
+import logger from './logger'
 
 var Promise = require('es6-promise').Promise
   , mongoose = require('mongoose')
@@ -286,6 +287,8 @@ export default class EmailSender {
           Subject: `[Princeton.Chat] Problem Posting RE: ${this.post.title}`,
           HtmlBody: errorEmailContent,
         };
+
+        logger.info(errorEmail);
 
         return this.__sendBatchEmails([ errorEmail ])
         .then(() => {
