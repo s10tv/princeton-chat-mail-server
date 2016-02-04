@@ -82,6 +82,7 @@ export default class EmailSender {
           return Promise.resolve(true);
         }
 
+        const hash = this.__generateHash({ id: postId, user });
         const emailContent = this.__addFooter({
           content,
           post: this.post,
@@ -90,9 +91,9 @@ export default class EmailSender {
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
-          To: `Princeton.Chat <reply+${postId}@${this.mailserver}>`,
+          To: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
           CC: email.address,
-          ReplyTo: `Princeton.Chat <reply+${postId}@${this.mailserver}>`,
+          ReplyTo: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
           Subject: `[Princeton.Chat] RE: ${this.post.title}`,
           HtmlBody: emailContent,
         };
@@ -126,6 +127,7 @@ export default class EmailSender {
         const [ email ] =  user.emails;
 
         const fromName = this.parseDisplayName(this.messageOwner);
+        const hash = this.__generateHash({ id: this.post._id, user });
         const emailContent = this.__addFooter({
           content: this.message.content,
           post: this.post,
@@ -134,9 +136,9 @@ export default class EmailSender {
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
-          To: `Princeton.Chat <reply+${this.post._id}@${this.mailserver}>`,
+          To: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
           CC: email.address,
-          ReplyTo: `Princeton.Chat <reply+${this.post._id}@${this.mailserver}>`,
+          ReplyTo: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
           Subject: `[Princeton.Chat] RE: ${this.post.title}`,
           HtmlBody: emailContent,
         };
@@ -192,12 +194,13 @@ export default class EmailSender {
         });
 
         const fromName = this.parseDisplayName(this.postOwner);
+        const hash = this.__generateHash({ id: this.post._id, user });
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
           CC: email.address,
-          To: `Princeton.Chat <reply+${this.post._id}@${this.mailserver}>`,
-          ReplyTo: `Princeton.Chat <reply+${this.post._id}@${this.mailserver}>`,
+          To: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
+          ReplyTo: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
           Subject: `[Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
         };
@@ -236,6 +239,22 @@ export default class EmailSender {
     });
   }
 
+  __generateHash({ id, user }) {
+    return `${id}_=_=${user._id}`
+  }
+
+  __parseHash(hash) {
+    if (!hash) {
+      return {}
+    }
+
+    const [id, userId] = hash.split('_=_=')
+    return {
+      id,
+      userId,
+    }
+  }
+
   /**
    * Sets:
    * [eveything in post info], senderUser
@@ -253,6 +272,9 @@ export default class EmailSender {
       }
 
       this.senderUser = senderUser;
+      return Promise.resolve(true);
+    })
+    .then(() => {
       return this.__getPostInfo(postId)
     })
   }
