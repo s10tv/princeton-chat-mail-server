@@ -48,7 +48,9 @@ app.post('/no-op', (req, res) => {
 app.post('/postmark-message-reply', (req, res) => {
   const postmarkInfo = req.body;
 
-  logger.info('[postmark-message-reply]', postmarkInfo);
+  logger.info('[postmark-message-reply]');
+  logger.info(postmarkInfo);
+
   return Sender.handleEmailReply(postmarkInfo)
     .then(() => {
       return handleSuccess('Postmark-Message success', res)
@@ -59,7 +61,8 @@ app.post('/postmark-message-reply', (req, res) => {
 })
 
 app.post('/web-post', (req, res) => {
-  logger.info('web-post', req.body);
+  logger.info('web-post');
+  logger.info(req.body);
 
   const postId = req.body.postId;
   if (!postId) {
