@@ -48,6 +48,12 @@ app.post('/no-op', (req, res) => {
 app.post('/postmark-message-reply', (req, res) => {
   const postmarkInfo = req.body;
 
+  // for some reason, replies to emails come with an extra email from notifications@ to our
+  // reply email. If this happens, omit it.
+  if (postmarkInfo.From && postmarkInfo.from === 'notifications@princeton.chat') {
+    return res.send(200);
+  }
+
   logger.info('[postmark-message-reply]');
   logger.info(postmarkInfo);
 
