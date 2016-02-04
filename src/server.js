@@ -10,6 +10,8 @@ import logger from './logger'
 import secrets from './config/secrets'
 import { INFO } from './common'
 import EmailSender from './email-sender'
+import pjson from '../package.json'
+
 
 export const app = express()
 
@@ -39,6 +41,10 @@ function handleError(err, res) {
 
 app.use(bodyParser.json());
 app.use(raygunClient.expressHandler);
+
+app.get('/', (req, res) => {
+  return res.json({ version: pjson.version });
+})
 
 app.post('/no-op', (req, res) => {
   logger.info('no-op');
