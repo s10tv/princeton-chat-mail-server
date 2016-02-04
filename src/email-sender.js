@@ -208,17 +208,18 @@ export default class EmailSender {
 
   __addFooter({ content, post, sender }) {
 
-    const [topic] = post.topicIds
-    const [{ emailAddress }] = sender.emails;
+    const [topicId] = post.topicIds
+    const [{ address }] = sender.emails;
 
     return `
       <p>${content}</p>
       <p style="padding-top: 15px">
         --<br />
-        Reply to this email directly or <a href='/${topic._id}/${post._id}'>View it on Princeton.Chat</a><br />
-        You can also <a href='/${sender._id}/unfollow'>Unfollow</a> this thread or <a href='/${sender._id}/preferences'>Edit topics I follow</a><br />
+        Reply to this email directly or <a href='${secrets.url}/${topicId}/${post._id}'>View it on Princeton.Chat</a><br />
+        You can also <a href='${secrets.url}/${sender._id}/unfollow'>Unfollow</a>
+          this thread or <a href='${secrets.url}/${sender._id}/preferences'>Edit topics I follow</a><br />
         TO privately reply to the sender, email<br />
-        <a href='#'>${emailAddress}</a>
+          <a href='mailto:${address}'>${address}</a>
       </p>`
   }
 
