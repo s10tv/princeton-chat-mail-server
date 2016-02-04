@@ -5,6 +5,7 @@ import postmark from 'postmark'
 import bodyParser from 'body-parser'
 import { Promise } from 'es6-promise'
 
+import logger from './logger'
 import secrets from './config/secrets'
 import { INFO } from './common'
 import EmailSender from './email-sender'
@@ -29,6 +30,7 @@ function handleSuccess(message, res) {
 }
 
 function handleError(message, res) {
+  logger.error(message);
   return res.sendStatus(500);
 }
 
@@ -36,12 +38,14 @@ app.use(bodyParser.json());
 
 app.post('/no-op', (req, res) => {
   console.log(req.body);
-  return res.sendStatus(200);  
+  return res.sendStatus(200);
 })
 
 app.post('/postmark-message-reply', (req, res) => {
   const postmarkInfo = req.body;
 
+  logger.info('[postmark-message-reply]', postmarkInfo);
+  
   return Sender.handleEmailReply(postmarkInfo)
     .then(() => {
       return handleSuccess('Postmark-Message success', res)
@@ -54,9 +58,11 @@ app.post('/postmark-message-reply', (req, res) => {
 app.post('/web-post', (req, res) => {
   const postId = req.body.postId;
   if (!postId) {
+    logger.error('[web-post] postId was not found in the request');
     return res.status(400).send('postId is not found in the request');
   }
 
+  logger.info(`[web-post] request with postId=${postId}`)
   return Sender.handleNewPostFromWeb(postId)
     .then(() => {
       return handleSuccess('Web-Post success', res)
@@ -69,9 +75,11 @@ app.post('/web-post', (req, res) => {
 app.post('/web-message', (req, res) => {
   const messageId = req.body.messageId;
   if (!messageId) {
+    logger.error('[web-message] MessageId was not found in the request');
     return res.status(400).send('messageId is not found in the request');
   }
 
+  logger.info(`[web-message] request with messageId=${messageId}`)
   return Sender.handleNewMessageFromWeb(messageId)
     .then(() => {
       return handleSuccess('Web-Message success', res)
