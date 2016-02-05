@@ -39,7 +39,7 @@ function handleError(err, res) {
   return res.sendStatus(200); // fix this. throw 400s
 }
 
-app.use(bodyParser.json());
+app.use(bodyParser.text());
 app.use(raygunClient.expressHandler);
 
 app.get('/', (req, res) => {
