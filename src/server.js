@@ -40,7 +40,8 @@ function handleError(err, res) {
   return res.sendStatus(200); // fix this. throw 400s
 }
 
-app.use(bodyParser.text());
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(raygunClient.expressHandler);
 
 app.get('/', (req, res) => {
@@ -48,7 +49,10 @@ app.get('/', (req, res) => {
 })
 
 app.post('/no-op', m.any(), (req, res) => {
-  console.log(req.body);
+  console.log('body');
+  console.log(req.body['stripped-text'])
+  console.log(req.body)
+
   return res.sendStatus(200);
 })
 

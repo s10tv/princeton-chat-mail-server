@@ -1,33 +1,33 @@
 import secrets from './config/secrets'
 
 export default class ReplyParser {
-  parse(postmarkResponse) {
-    if (!postmarkResponse) {
-      throw new Error('Empty response from postmark')
+  parse(emailResponse) {
+    if (!emailResponse) {
+      throw new Error('Empty response from mail server')
     }
 
     // first message replies do not come with StrippedTextReply, use textbody instead.
-    let content = postmarkResponse.StrippedTextReply;
+    let content = emailResponse['stripped-text'];
     if (!content) {
-      content = postmarkResponse.TextBody;
+      content = emailResponse['body-plain'];
     }
     if (!content) {
-      throw new Error('Undefined content from postmark.')
+      throw new Error('Undefined content from mail server.')
     }
 
-    const toInfo = postmarkResponse.ToFull;
+    const toInfo = emailResponse.ToFull;
     if (!toInfo) {
-      throw new Error('Empty to info from postmark')
+      throw new Error('Empty to info from mail server')
     }
 
-    const fromInfo = postmarkResponse.FromFull;
+    const fromInfo = emailResponse.FromFull;
     if (!fromInfo) {
-      throw new Error('Empty from info from postmark')
+      throw new Error('Empty from info from mail server')
     }
 
     const fromEmail = fromInfo.Email;
     if (!fromEmail) {
-      throw new Error('Empty from email from postmark')
+      throw new Error('Empty from email from mail server')
     }
 
     const regex = new RegExp(`@${secrets.topicMailServer}$`, "i");
@@ -46,7 +46,7 @@ export default class ReplyParser {
       fromName,
       fromEmail,
       content,
-      subject: postmarkResponse.Subject,
+      subject: emailResponse.Subject,
       toEmail: Email,
       postId: MailboxHash,
     }
