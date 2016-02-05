@@ -3,6 +3,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import postmark from 'postmark'
 import bodyParser from 'body-parser'
+import multer from 'multer'
 import { Promise } from 'es6-promise'
 import raygun from 'raygun'
 
@@ -12,8 +13,8 @@ import { INFO } from './common'
 import EmailSender from './email-sender'
 import pjson from '../package.json'
 
-
 export const app = express()
+const m = multer({})
 
 // injectable
 let PostmarkClient = new postmark.Client(secrets.postmark.token);
@@ -46,12 +47,12 @@ app.get('/', (req, res) => {
   return res.json({ version: pjson.version });
 })
 
-app.post('/no-op', (req, res) => {
+app.post('/no-op', m.any(), (req, res) => {
   console.log(req.body);
   return res.sendStatus(200);
 })
 
-app.post('/postmark-message-reply', (req, res) => {
+app.post('/postmark-message-reply', m.any(), (req, res) => {
   const postmarkInfo = JSON.parse(req.body);
 
   // for some reason, replies to emails come with an extra email from notifications@ to our
@@ -72,7 +73,7 @@ app.post('/postmark-message-reply', (req, res) => {
     })
 })
 
-app.post('/web-post', (req, res) => {
+app.post('/web-post', m.any(), (req, res) => {
   logger.info('web-post');
   logger.info(req.body);
 
@@ -92,7 +93,7 @@ app.post('/web-post', (req, res) => {
     })
 })
 
-app.post('/web-message', (req, res) => {
+app.post('/web-message', m.any(), (req, res) => {
   const messageId = JSON.parse(req.body).messageId;
   if (!messageId) {
     let error = new Error('[web-message] messageId is not found in the request');
