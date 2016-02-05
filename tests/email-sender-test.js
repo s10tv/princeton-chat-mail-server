@@ -3,6 +3,7 @@ var mongoose = require('mongoose')
   , should = require('chai').should()
   , Message = require('../src/models/message')
   , Post = require('../src/models/post')
+  , Topic = require('../src/models/topic')
   , User = require('../src/models/user')
   , dbURI = 'mongodb://localhost:27017/test';
 
@@ -16,6 +17,10 @@ describe('EmailSender', () => {
   before(function (done) {
     if (mongoose.connection.db) return done();
     mongoose.connect(dbURI, done);
+  });
+
+  beforeEach((done) => {
+    Topic.remove({}, done)
   });
 
   beforeEach((done) => {
@@ -308,6 +313,108 @@ describe('EmailSender', () => {
           done();
         })
         .catch(err => done(err))
+      })
+    })
+
+    describe('when the sender sends an email to start a post', () => {
+      const POST_INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
+
+      // special case - clear out the posts
+      beforeEach((done) => {
+        Post.remove({}, done)
+      })
+
+      beforeEach(() => {
+        POST_INPUT.ToFull[0].MailboxHash = "";
+        POST_INPUT.ToFull[0].Email = 'cookies@inbound.princeton.chat';
+        POST_INPUT.To= 'cookies@inbound.princeton.chat';
+      })
+
+      beforeEach((done) => {
+        new Topic({
+          _id: 'cookies',
+          displayName: 'Chocolate Chip',
+        }).save(done);
+      })
+
+      it('should create a new post', (done) => {
+        new EmailSender(postmarkClient, 'inbound.princeton.chat')
+          .handleEmailReply(POST_INPUT)
+          .then(() => {
+            return find(Post, {})
+          })
+          .then(posts => {
+            expect(posts.length).to.equal(1)
+            const [post] = posts;
+
+            expect(post.title).to.equal('Test subject')
+            expect(post.content).to.equal('This is the reply text')
+            expect(post.topicIds.length).to.equal(1)
+
+            const [ topicId ] = post.topicIds;
+            expect(topicId).to.equal('cookies')
+            done()
+          })
+          .catch(err => done(err))
+      })
+
+      it('should send out emails to anyone following the post', (done) => {
+        new Promise((resolve, reject) => {
+          new User({
+            _id: 'ninja',
+            username: 'ninja',
+            emails: [{ address: 'ninja@gmail.com' }],
+            followingTopics: ['cookies'],
+            emailPreference: 'all',
+          }).save(err => {
+            if (err) {
+              return reject(err);
+            }
+            return resolve(true);
+          })
+        })
+        .then(() => {
+          return new EmailSender(postmarkClient, 'inbound.princeton.chat')
+            .handleEmailReply(POST_INPUT)
+        })
+        .then(() => {
+          expect(postmarkClient.mailQueue.length).to.equal(1);
+          const [email] = postmarkClient.mailQueue;
+
+          // briefly validate that email will be sent. The content of the email will be validated
+          // later
+          expect(email.CC).to.equal('ninja@gmail.com');
+          done();
+        })
+        .catch(err => done(err));
+      })
+
+      describe('if the topic from the email does not exist', () => {
+        beforeEach(() => {
+          POST_INPUT.ToFull[0].Email = 'iamawesome@inbound.princeton.chat';
+        })
+
+        it('should send an error email', (done) => {
+          new EmailSender(postmarkClient, 'inbound.princeton.chat')
+            .handleEmailReply(POST_INPUT)
+          .then(() => {
+            return count(Post, {})
+          })
+          .then(postCount => {
+            expect(postCount).to.equal(0);
+            expect(postmarkClient.mailQueue.length).to.equal(1);
+            const [email] = postmarkClient.mailQueue;
+
+            expect(email.From).to.equal('Princeton.Chat <notifications@princeton.chat>');
+            expect(email.To).to.equal('nurym@gmail.com');
+            expect(email.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Test subject');
+            expect(email.ReplyTo).to.equal('Princeton.Chat <hello@princeton.chat>');
+            expect(email.HtmlBody).to.exist;
+
+            done()
+          })
+          .catch(err => done(err))
+        })
       })
     })
 

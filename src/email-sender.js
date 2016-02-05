@@ -37,14 +37,14 @@ export default class EmailSender {
 
     if (!postId) {
       // Possibly a new post since the email didn't come with a post id.
-      return this.__handleNePostFromEmail({ fromEmail, fromName, subject, })
+      return this.__handleNewPostFromEmail({ fromEmail, fromName, toEmail, subject, content })
     }
 
     // Possibly a reply to an existing post, since the message came witha  post id.
     return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content })
   }
 
-  __handleNewPostFromEmail({ fromEmail, fromName, subject }) {
+  __handleNewPostFromEmail({ fromEmail, fromName, toEmail, subject, content }) {
     const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${subject}`;
     return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
     .then(senderUser => {
@@ -78,11 +78,9 @@ export default class EmailSender {
         return this.__sendEmail(errorEmail)
       }
 
-      // TODO : insert post, send out emails.
-
-      const postId = uuid.v4()
-      return upsert(Post, { _id: postId}, {
-        _id: postId,
+      const newPostId= uuid.v4()
+      return upsert(Post, { _id: newPostId}, {
+        _id: newPostId,
         title: subject,
         content: content,
         ownerId: this.senderUser._id,
@@ -92,7 +90,7 @@ export default class EmailSender {
         }]
       })
       .then(() => {
-        return this.handleNewPostFromWeb(postId)
+        return this.handleNewPostFromWeb(newPostId)
       })
     })
   }
