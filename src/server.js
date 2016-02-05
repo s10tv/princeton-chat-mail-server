@@ -77,7 +77,7 @@ app.post('/postmark-message-reply', m.any(), (req, res) => {
     })
 })
 
-app.post('/web-post', m.any(), (req, res) => {
+app.post('/web-post', (req, res) => {
   logger.info('web-post');
   logger.info(req.body);
 
@@ -97,7 +97,7 @@ app.post('/web-post', m.any(), (req, res) => {
     })
 })
 
-app.post('/web-message', m.any(), (req, res) => {
+app.post('/web-message', (req, res) => {
   const messageId = req.body.messageId;
   if (!messageId) {
     let error = new Error('[web-message] messageId is not found in the request');
