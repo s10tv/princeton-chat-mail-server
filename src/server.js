@@ -55,7 +55,7 @@ app.post('/no-op', (req, res) => {
 })
 
 app.post('/postmark-message-reply', (req, res) => {
-  const postmarkInfo = req.body;
+  const postmarkInfo = JSON.parse(req.body);
 
   // for some reason, replies to emails come with an extra email from notifications@ to our
   // reply email. If this happens, omit it.
@@ -79,7 +79,7 @@ app.post('/web-post', (req, res) => {
   logger.info('web-post');
   logger.info(req.body);
 
-  const postId = req.body.postId;
+  const postId = JSON.parse(req.body).postId;
   if (!postId) {
     let error = new Error('[web-post] postId was not found in the request');
     return handleError(error, res)
@@ -96,7 +96,7 @@ app.post('/web-post', (req, res) => {
 })
 
 app.post('/web-message', (req, res) => {
-  const messageId = req.body.messageId;
+  const messageId = JSON.parse(req.body).messageId;
   if (!messageId) {
     let error = new Error('[web-message] messageId is not found in the request');
     return handleError(error, res)

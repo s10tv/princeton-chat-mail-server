@@ -15,14 +15,15 @@ describe('Server', () => {
   })
 
   it('should handle /postmark-message-reply', (done) => {
-    const POSTMARK_DATA = { test: 'true' }
+    const POSTMARK_DATA = JSON.stringify({ test: 'true' })
 
     request('http://localhost:5000')
       .post('/postmark-message-reply')
+      .set('Content-Type', 'text/plain')
       .send(POSTMARK_DATA)
       .expect(200)
       .end(function(err, res) {
-        expect(Sender.postmarkInput).to.deep.equal(POSTMARK_DATA);
+        expect(Sender.postmarkInput).to.deep.equal({"test": "true"});
         done()
       });
   })
@@ -30,7 +31,8 @@ describe('Server', () => {
   it('should handle /web-post', (done) => {
     request('http://localhost:5000')
       .post('/web-post')
-      .send({ postId: 'post-id' })
+      .set('Content-Type', 'text/plain')
+      .send(JSON.stringify({ postId: 'post-id' }))
       .expect(200)
       .end(function(err, res) {
         expect(Sender.postId).to.equal('post-id');
@@ -41,7 +43,8 @@ describe('Server', () => {
   it('should handle /web-message', (done) => {
     request('http://localhost:5000')
       .post('/web-message')
-      .send({ messageId: 'message-id' })
+      .set('Content-Type', 'text/plain')
+      .send(JSON.stringify({ messageId: 'message-id' }))
       .expect(200)
       .end(function(err, res) {
         expect(Sender.messageId).to.equal('message-id');
