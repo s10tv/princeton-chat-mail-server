@@ -153,12 +153,12 @@ export default class EmailSender {
           post: this.post,
           sender: this.senderUser,
         });
+        const toName = this.parseDisplayName(user);
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
-          From: `${fromName} <${fromEmail}>`,
-          To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
-          CC: email.address,
+          From: `${fromName} <${fromEmail}>`.trim(),
+          To: `${toName} <${email.address}>`.trim(),
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] RE: ${this.post.title}`,
           HtmlBody: emailContent,
@@ -193,6 +193,7 @@ export default class EmailSender {
         const [ email ] =  user.emails;
 
         const fromName = this.parseDisplayName(this.messageOwner);
+        const toName = this.parseDisplayName(user);
         const hash = this.post._id;
         const emailContent = this.__addFooter({
           content: this.message.content,
@@ -202,9 +203,8 @@ export default class EmailSender {
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
-          From: `${fromName} <${this.messageOwner.emails[0].address}>`,
-          To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
-          CC: email.address,
+          From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
+          To: `${toName} <${email.address}>`.trim(),
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] RE: ${this.post.title}`,
           HtmlBody: emailContent,
@@ -261,13 +261,13 @@ export default class EmailSender {
         });
 
         const fromName = this.parseDisplayName(this.postOwner);
+        const toName = this.parseDisplayName(user)
         const hash = this.post._id;
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
-          From: `${fromName} <${this.postOwner.emails[0].address}>`,
-          CC: email.address,
-          To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
+          From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
+          To: `${toName} <${email.address}>`.trim(),
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,

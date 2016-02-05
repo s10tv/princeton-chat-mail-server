@@ -157,8 +157,7 @@ describe('EmailSender', () => {
           const expectedReturn = '';
 
           expect(mail.From).to.equal('Qiming Fang <fang@gmail.com>');
-          expect(mail.CC).to.equal('tonyx@gmail.com');
-          expect(mail.To).to.equal('Princeton.Chat <startups@dev.topics.princeton.chat>');
+          expect(mail.To).to.equal('<tonyx@gmail.com>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+test-post-two@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('[Princeton.Chat] Post Title');
           expect(mail.HtmlBody).to.contain('hello world');
@@ -233,8 +232,7 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Diana Chau <diana@gmail.com>');
-          expect(mail.CC).to.equal('tonyx@gmail.com');
-          expect(mail.To).to.equal('Princeton.Chat <sports@dev.topics.princeton.chat>');
+          expect(mail.To).to.equal('<tonyx@gmail.com>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+super-bowl@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('[Princeton.Chat] RE: Super Bowl');
           expect(mail.HtmlBody).to.contain('i love it');
@@ -380,7 +378,7 @@ describe('EmailSender', () => {
 
           // briefly validate that email will be sent. The content of the email will be validated
           // later
-          expect(email.CC).to.equal('ninja@gmail.com');
+          expect(email.To).to.equal('<ninja@gmail.com>');
           done();
         })
         .catch(err => done(err));
@@ -434,8 +432,7 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Postmarkapp Support <nurym@gmail.com>');
-          expect(mail.CC).to.equal('diana@gmail.com');
-          expect(mail.To).to.equal('Princeton.Chat <startups@dev.topics.princeton.chat>');
+          expect(mail.To).to.equal('<diana@gmail.com>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+POST_ID@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('[Princeton.Chat] RE: Post Title');
           expect(mail.HtmlBody).to.contain('This is the reply text');
