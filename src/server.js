@@ -57,7 +57,7 @@ app.post('/no-op', m.any(), (req, res) => {
 })
 
 app.post('/postmark-message-reply', m.any(), (req, res) => {
-  const postmarkInfo = JSON.parse(req.body);
+  const postmarkInfo = req.body;
 
   // for some reason, replies to emails come with an extra email from notifications@ to our
   // reply email. If this happens, omit it.
@@ -81,7 +81,7 @@ app.post('/web-post', m.any(), (req, res) => {
   logger.info('web-post');
   logger.info(req.body);
 
-  const postId = JSON.parse(req.body).postId;
+  const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[web-post] postId was not found in the request');
     return handleError(error, res)
@@ -98,7 +98,7 @@ app.post('/web-post', m.any(), (req, res) => {
 })
 
 app.post('/web-message', m.any(), (req, res) => {
-  const messageId = JSON.parse(req.body).messageId;
+  const messageId = req.body.messageId;
   if (!messageId) {
     let error = new Error('[web-message] messageId is not found in the request');
     return handleError(error, res)
