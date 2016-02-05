@@ -12,5 +12,6 @@ export default {
   raygun: {
     key: process.env.RAYGUN_APIKEY || ''
   },
-  mailserver: process.env.MAIL_SERVER || 'dev.inbound.princeton.chat',
+  topicMailServer: process.env.TOPIC_MAIL_SERVER || 'dev.topics.princeton.chat',
+  postMailServer: process.env.POST_MAIL_SERVER || 'dev.posts.princeton.chat',
 }

@@ -1,8 +1,6 @@
-export default class ReplyParser {
-  constructor(mailserver) {
-    this.mailserver = mailserver || 'inbound.princeton.chat'
-  }
+import secrets from './config/secrets'
 
+export default class ReplyParser {
   parse(postmarkResponse) {
     if (!postmarkResponse) {
       throw new Error('Empty response from postmark')
@@ -32,17 +30,17 @@ export default class ReplyParser {
       throw new Error('Empty from email from postmark')
     }
 
-    const regex = new RegExp(`@${this.mailserver}$`, "i");
+    const regex = new RegExp(`@${secrets.topicMailServer}$`, "i");
 
     const princetonChatMailbox = toInfo.filter(info => regex.test(info.Email))
     if (princetonChatMailbox.length == 0) {
       // if the email was not delivered to our inbox. This shouldn't ever happen unless
       // we misconfigured our mail servers.
-      throw new Error(`Did not find any emails addressed to @${this.mailserver}`);
+      throw new Error(`Did not find any emails addressed to @${secrets.topicMailServer}`);
     }
 
     const [{ Email, MailboxHash }]  = princetonChatMailbox;
-    const fromName = fromInfo.Name || 'reply@inbound.princeton.chat';
+    const fromName = fromInfo.Name || 'reply@topics.princeton.chat';
 
     return {
       fromName,

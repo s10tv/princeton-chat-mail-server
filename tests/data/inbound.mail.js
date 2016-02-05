@@ -9,7 +9,7 @@ export default {
   "To": "\"Firstname Lastname\" ",
   "ToFull": [
     {
-      "Email": "yourhash+POST_ID@inbound.princeton.chat",
+      "Email": "yourhash+POST_ID@dev.topics.princeton.chat",
       "Name": "Princeton Chat",
       "MailboxHash": "POST_ID"
     }

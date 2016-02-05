@@ -17,10 +17,8 @@ var Promise = require('es6-promise').Promise
 
 export default class EmailSender {
 
-  constructor(postmarkClient, mailserver, rootUrl) {
+  constructor(postmarkClient) {
     this.postmarkClient = postmarkClient;
-    this.rootUrl = rootUrl || 'http://localhost:3000';
-    this.mailserver = mailserver || 'localhost';
   }
 
   /**
@@ -33,7 +31,7 @@ export default class EmailSender {
       postId,
       toEmail,
       subject,
-      content } = new ReplyParser(this.mailserver).parse(postmarkInput);
+      content } = new ReplyParser(secrets.topicMailServer).parse(postmarkInput);
 
     if (!postId) {
       // Possibly a new post since the email didn't come with a post id.
@@ -154,12 +152,13 @@ export default class EmailSender {
           post: this.post,
           sender: this.senderUser,
         });
+        const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
-          To: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
+          To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
           CC: email.address,
-          ReplyTo: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
+          ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] RE: ${this.post.title}`,
           HtmlBody: emailContent,
         };
@@ -199,12 +198,13 @@ export default class EmailSender {
           post: this.post,
           sender: this.messageOwner,
         });
+        const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
-          To: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
+          To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
           CC: email.address,
-          ReplyTo: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
+          ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] RE: ${this.post.title}`,
           HtmlBody: emailContent,
         };
@@ -261,12 +261,13 @@ export default class EmailSender {
 
         const fromName = this.parseDisplayName(this.postOwner);
         const hash = this.post._id;
+        const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
           From: `${fromName} <notifications@princeton.chat>`,
           CC: email.address,
-          To: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
-          ReplyTo: `Princeton.Chat <reply+${hash}@${this.mailserver}>`,
+          To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
+          ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
         };

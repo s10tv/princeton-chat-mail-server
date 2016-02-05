@@ -17,7 +17,7 @@ export const app = express()
 
 // injectable
 let PostmarkClient = new postmark.Client(secrets.postmark.token);
-let Sender = new EmailSender(PostmarkClient, secrets.mailserver, secrets.url);
+let Sender = new EmailSender(PostmarkClient, secrets.topicMailServer, secrets.url);
 let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
 
 mongoose.Promise = Promise
