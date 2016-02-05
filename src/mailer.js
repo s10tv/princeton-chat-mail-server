@@ -1,5 +1,6 @@
 import Mailgun from 'mailgun-js'
 import secrets from './config/secrets'
+import logger from './logger'
 
 export default class Mailer {
 
@@ -11,7 +12,7 @@ export default class Mailer {
   }
 
   send({ From, To, CC, ReplyTo, Subject, HtmlBody }) {
-    const params = {
+    const mail = {
       to: To,
       from: From,
       'h:Reply-To': ReplyTo,
@@ -19,8 +20,10 @@ export default class Mailer {
       html: HtmlBody,
     };
 
+    logger.info(mail)
+
     return new Promise((resolve, reject) => {
-      this.mailgun.messages().send(params, function (err, body) {
+      this.mailgun.messages().send(mail, function (err, body) {
         if (err) {
           return reject(err);
         }
