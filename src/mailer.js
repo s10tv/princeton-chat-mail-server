@@ -16,6 +16,7 @@ export default class Mailer {
       to: To,
       from: From,
       'h:Reply-To': ReplyTo,
+      'h:In-Reply-To': ReplyTo,
       subject: Subject,
       html: HtmlBody,
     };
