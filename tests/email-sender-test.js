@@ -156,7 +156,7 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
           const expectedReturn = '';
 
-          expect(mail.From).to.equal('Qiming Fang <notifications@princeton.chat>');
+          expect(mail.From).to.equal('Qiming Fang <fang@gmail.com>');
           expect(mail.CC).to.equal('tonyx@gmail.com');
           expect(mail.To).to.equal('Princeton.Chat <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+test-post-two@dev.posts.princeton.chat>');
@@ -232,7 +232,7 @@ describe('EmailSender', () => {
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
 
-          expect(mail.From).to.equal('Diana Chau <notifications@princeton.chat>');
+          expect(mail.From).to.equal('Diana Chau <diana@gmail.com>');
           expect(mail.CC).to.equal('tonyx@gmail.com');
           expect(mail.To).to.equal('Princeton.Chat <sports@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+super-bowl@dev.posts.princeton.chat>');
@@ -433,7 +433,7 @@ describe('EmailSender', () => {
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
 
-          expect(mail.From).to.equal('Postmarkapp Support <notifications@princeton.chat>');
+          expect(mail.From).to.equal('Postmarkapp Support <nurym@gmail.com>');
           expect(mail.CC).to.equal('diana@gmail.com');
           expect(mail.To).to.equal('Princeton.Chat <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+POST_ID@dev.posts.princeton.chat>');

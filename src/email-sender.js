@@ -156,7 +156,7 @@ export default class EmailSender {
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
-          From: `${fromName} <notifications@princeton.chat>`,
+          From: `${fromName} <${fromEmail}>`,
           To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
           CC: email.address,
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
@@ -202,7 +202,7 @@ export default class EmailSender {
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
-          From: `${fromName} <notifications@princeton.chat>`,
+          From: `${fromName} <${this.messageOwner.emails[0].address}>`,
           To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
           CC: email.address,
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
@@ -265,7 +265,7 @@ export default class EmailSender {
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
         return {
-          From: `${fromName} <notifications@princeton.chat>`,
+          From: `${fromName} <${this.postOwner.emails[0].address}>`,
           CC: email.address,
           To: `Princeton.Chat <${topicId}@${secrets.topicMailServer}>`,
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
