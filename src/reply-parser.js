@@ -1,3 +1,4 @@
+import emailparser from 'email-addresses'
 import secrets from './config/secrets'
 
 export default class ReplyParser {
@@ -11,44 +12,42 @@ export default class ReplyParser {
     if (!content) {
       content = emailResponse['body-plain'];
     }
+
+    const toInfo = emailparser.parseOneAddress(emailResponse.recipient);
+    const toEmail = toInfo.address;
+    let postId = undefined;
+    if (toInfo && toInfo.local) {
+      const splittedToAddress = toInfo.local.split('+')
+      if (splittedToAddress.length == 2) {
+        postId = splittedToAddress[1]
+      }
+    }
+
+    (toInfo && toInfo.local) ? toInfo.local : undefined;
+
+    const fromInfo = emailparser.parseOneAddress(emailResponse.from);
+    const fromName = fromInfo.name || '';
+    const fromEmail = fromInfo.address;
+
     if (!content) {
       throw new Error('Undefined content from mail server.')
     }
 
-    const toInfo = emailResponse.ToFull;
-    if (!toInfo) {
-      throw new Error('Empty to info from mail server')
-    }
-
-    const fromInfo = emailResponse.FromFull;
-    if (!fromInfo) {
-      throw new Error('Empty from info from mail server')
-    }
-
-    const fromEmail = fromInfo.Email;
     if (!fromEmail) {
-      throw new Error('Empty from email from mail server')
+      throw new Error('Could not parse from email.')
     }
 
-    const regex = new RegExp(`@${secrets.topicMailServer}$`, "i");
-
-    const princetonChatMailbox = toInfo.filter(info => regex.test(info.Email))
-    if (princetonChatMailbox.length == 0) {
-      // if the email was not delivered to our inbox. This shouldn't ever happen unless
-      // we misconfigured our mail servers.
-      throw new Error(`Did not find any emails addressed to @${secrets.topicMailServer}`);
+    if (!toEmail) {
+      throw new Error(`Could not parse toEmail from recipient info: ${emailResponse.recipient}`)
     }
-
-    const [{ Email, MailboxHash }]  = princetonChatMailbox;
-    const fromName = fromInfo.Name || 'reply@topics.princeton.chat';
 
     return {
       fromName,
       fromEmail,
       content,
-      subject: emailResponse.Subject,
-      toEmail: Email,
-      postId: MailboxHash,
+      postId,
+      toEmail,
+      subject: emailResponse.subject,
     }
   }
 }

@@ -1,79 +1,29 @@
 export default {
-  "FromName": "Postmarkapp Support",
-  "From": "support@postmarkapp.com",
-  "FromFull": {
-    "Email": "nurym@gmail.com",
-    "Name": "Postmarkapp Support",
-    "MailboxHash": ""
-  },
-  "To": "\"Firstname Lastname\" ",
-  "ToFull": [
-    {
-      "Email": "yourhash+POST_ID@dev.topics.princeton.chat",
-      "Name": "Princeton Chat",
-      "MailboxHash": "POST_ID"
-    }
-  ],
-  "Cc": "\"First Cc\" , secondCc@postmarkapp.com",
-  "CcFull": [
-    {
-      "Email": "firstcc@postmarkapp.com",
-      "Name": "First Cc",
-      "MailboxHash": ""
-    },
-    {
-      "Email": "secondCc@postmarkapp.com",
-      "Name": "",
-      "MailboxHash": ""
-    }
-  ],
-  "Bcc": "\"First Bcc\" , secondbcc@postmarkapp.com",
-  "BccFull": [
-    {
-      "Email": "firstbcc@postmarkapp.com",
-      "Name": "First Bcc",
-      "MailboxHash": ""
-    },
-    {
-      "Email": "secondbcc@postmarkapp.com",
-      "Name": "",
-      "MailboxHash": ""
-    }
-  ],
-  "OriginalRecipient": "yourhash+POST_ID@inbound.postmarkapp.com",
-  "Subject": "Test subject",
-  "MessageID": "73e6d360-66eb-11e1-8e72-a8904824019b",
-  "ReplyTo": "replyto@postmarkapp.com",
-  "MailboxHash": "POST_ID",
-  "Date": "Fri, 1 Aug 2014 16:45:32 -04:00",
-  "TextBody": "This is a test text body.",
-  "HtmlBody": "<html><body><p>This is a test html body.<\/p><\/body><\/html>",
-  "StrippedTextReply": "This is the reply text",
-  "Tag": "TestTag",
-  "Headers": [
-    {
-      "Name": "X-Header-Test",
-      "Value": ""
-    },
-    {
-      "Name": "X-Spam-Status",
-      "Value": "No"
-    },
-    {
-      "Name": "X-Spam-Score",
-      "Value": "-0.1"
-    },
-    {
-      "Name": "X-Spam-Tests",
-      "Value": "DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,SPF_PASS"
-    }
-  ],
-  "Attachments": [
-    {
-      "Name": "test.txt",
-      "Content": "VGhpcyBpcyBhdHRhY2htZW50IGNvbnRlbnRzLCBiYXNlLTY0IGVuY29kZWQu",
-      "ContentType": "text/plain",
-      "ContentLength": 45
-    }
-  ]
+	"recipient": "yourhash+POST_ID@dev.topics.princeton.chat",
+	"sender": "fang@s10.tv",
+	"subject": "Test subject",
+	"from": "Postmarkapp Support <nurym@gmail.com>",
+	"X-Mailgun-Incoming": "Yes",
+	"X-Envelope-From": "<fang@s10.tv>",
+	"Received": ["from mail-wm0-f48.google.com (mail-wm0-f48.google.com [74.125.82.48]) by mxa.mailgun.org with ESMTP id 56b43077.61c9530-in6; Fri, 05 Feb 2016 05:17:43 -0000 (UTC)", "by mail-wm0-f48.google.com with SMTP id 128so55645263wmz.1        for <test@dev.topics.princeton.chat>; Thu, 04 Feb 2016 21:17:43 -0800 (PST)", "by 10.27.14.33 with HTTP; Thu, 4 Feb 2016 21:17:42 -0800 (PST)"],
+	"Dkim-Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed;        d=taylrapp-com.20150623.gappssmtp.com; s=20150623;        h=mime-version:date:message-id:subject:from:to:content-type;        bh=Ki/u6bgnjhieVtZvZKrp/eVxCFb16epk+ls8Zho8v6I=;        b=WL/D3LvLYBNq1RiINVO3gNNnXqfPsnDJ0215AZb1OJceJEzOvxzWZVXKVDPVazacJF         OAHKXhbIWBX0Dt2tuqpm1Ilb1nsT0QcCqf9/KfvNJD5nFacgVzZruz7ZrDOGge0tDV1k         Ns9S/iBxCKrv9TM2iIqRjRXfYcJtU4xHIHG84pj2wpLGBfH8IVWKfr3Lh2Hv9aJuZy4H         88q4QpZAhMWSH61djZdYxTCT2Qo6xToIYjjPE3VtZSVZe5FAXJqbVZum8firadDmd0B3         rXY/CqYiYZ9IjBB5N8beqVqcR2dqO2QN5n/3Ur8vJZATtQCaWuX/0bPvDO4HRrNr8Ar6         jhRA==",
+	"X-Google-Dkim-Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20130820;        h=x-gm-message-state:mime-version:date:message-id:subject:from:to         :content-type;        bh=Ki/u6bgnjhieVtZvZKrp/eVxCFb16epk+ls8Zho8v6I=;        b=TtvnHkdGQ6VuWtRbUhUfneIjwITWLsmLb5A0p2A8B4/8oCTQONZSgxOOstMugxvPB1         TsUPM+bRqSBKuDubachEs5pDATgEanpdHgCTA14W/BoJLcWdPzrQ9kVJXomRdz8CUXGg         jfh0NDDstVNTFkIOa2/K/XQgvEoIkA6kOAefO3RMmFCkPYczn4tWbzJSRK4sb/FzDG79         cIFXiAF6PYClLjP0EM0HZHd/LYUJM9K0sVTKqePc83b/ZfTDxv6einqskQFF6UXza8xT         ZF3kYO+DmyAVZlpYGj75JWSmyNXJ3T5AG5dUxNWXHyikHyaoRrrmojAdb0PVERiZMakW         B5EA==",
+	"X-Gm-Message-State": "AG10YOSLGfu83UzKwrF+rSPuU+ucmg1343PeeI1uTjm2D6gpDJvsH6vziX53XyBkUyiLMUdMkEkBwmF4rUsXOOlLD8E=",
+	"Mime-Version": "1.0",
+	"X-Received": "by 10.194.235.4 with SMTP id ui4mr11518142wjc.177.1454649462599; Thu, 04 Feb 2016 21:17:42 -0800 (PST)",
+	"Date": "Thu, 4 Feb 2016 21:17:42 -0800",
+	"Message-Id": "<CAHuZsrzgxbPQW9-u34exwxtep8BNrX5FM+P_4iPQtMkNu3YYYQ@mail.gmail.com>",
+	"Subject": "Test subject",
+	"From": "Qiming Fang <nurym@gmail.com>",
+	"To": "yourhash+POST_ID@dev.topics.princeton.chat",
+	"Content-Type": "multipart/alternative; boundary=\"089e01419e667dbdb2052afef865\"",
+	"message-headers": "[[\"X-Mailgun-Incoming\", \"Yes\"], [\"X-Envelope-From\", \"<fang@s10.tv>\"], [\"Received\", \"from mail-wm0-f48.google.com (mail-wm0-f48.google.com [74.125.82.48]) by mxa.mailgun.org with ESMTP id 56b43077.61c9530-in6; Fri, 05 Feb 2016 05:17:43 -0000 (UTC)\"], [\"Received\", \"by mail-wm0-f48.google.com with SMTP id 128so55645263wmz.1        for <test@dev.topics.princeton.chat>; Thu, 04 Feb 2016 21:17:43 -0800 (PST)\"], [\"Dkim-Signature\", \"v=1; a=rsa-sha256; c=relaxed/relaxed;        d=taylrapp-com.20150623.gappssmtp.com; s=20150623;        h=mime-version:date:message-id:subject:from:to:content-type;        bh=Ki/u6bgnjhieVtZvZKrp/eVxCFb16epk+ls8Zho8v6I=;        b=WL/D3LvLYBNq1RiINVO3gNNnXqfPsnDJ0215AZb1OJceJEzOvxzWZVXKVDPVazacJF         OAHKXhbIWBX0Dt2tuqpm1Ilb1nsT0QcCqf9/KfvNJD5nFacgVzZruz7ZrDOGge0tDV1k         Ns9S/iBxCKrv9TM2iIqRjRXfYcJtU4xHIHG84pj2wpLGBfH8IVWKfr3Lh2Hv9aJuZy4H         88q4QpZAhMWSH61djZdYxTCT2Qo6xToIYjjPE3VtZSVZe5FAXJqbVZum8firadDmd0B3         rXY/CqYiYZ9IjBB5N8beqVqcR2dqO2QN5n/3Ur8vJZATtQCaWuX/0bPvDO4HRrNr8Ar6         jhRA==\"], [\"X-Google-Dkim-Signature\", \"v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20130820;        h=x-gm-message-state:mime-version:date:message-id:subject:from:to         :content-type;        bh=Ki/u6bgnjhieVtZvZKrp/eVxCFb16epk+ls8Zho8v6I=;        b=TtvnHkdGQ6VuWtRbUhUfneIjwITWLsmLb5A0p2A8B4/8oCTQONZSgxOOstMugxvPB1         TsUPM+bRqSBKuDubachEs5pDATgEanpdHgCTA14W/BoJLcWdPzrQ9kVJXomRdz8CUXGg         jfh0NDDstVNTFkIOa2/K/XQgvEoIkA6kOAefO3RMmFCkPYczn4tWbzJSRK4sb/FzDG79         cIFXiAF6PYClLjP0EM0HZHd/LYUJM9K0sVTKqePc83b/ZfTDxv6einqskQFF6UXza8xT         ZF3kYO+DmyAVZlpYGj75JWSmyNXJ3T5AG5dUxNWXHyikHyaoRrrmojAdb0PVERiZMakW         B5EA==\"], [\"X-Gm-Message-State\", \"AG10YOSLGfu83UzKwrF+rSPuU+ucmg1343PeeI1uTjm2D6gpDJvsH6vziX53XyBkUyiLMUdMkEkBwmF4rUsXOOlLD8E=\"], [\"Mime-Version\", \"1.0\"], [\"X-Received\", \"by 10.194.235.4 with SMTP id ui4mr11518142wjc.177.1454649462599; Thu, 04 Feb 2016 21:17:42 -0800 (PST)\"], [\"Received\", \"by 10.27.14.33 with HTTP; Thu, 4 Feb 2016 21:17:42 -0800 (PST)\"], [\"Date\", \"Thu, 4 Feb 2016 21:17:42 -0800\"], [\"Message-Id\", \"<CAHuZsrzgxbPQW9-u34exwxtep8BNrX5FM+P_4iPQtMkNu3YYYQ@mail.gmail.com>\"], [\"Subject\", \"lets try this one more time\"], [\"From\", \"Qiming Fang <fang@taylrapp.com>\"], [\"To\", \"test@dev.topics.princeton.chat\"], [\"Content-Type\", \"multipart/alternative; boundary=\\\"089e01419e667dbdb2052afef865\\\"\"]]",
+	"timestamp": "1454649464",
+	"token": "5f7c9b8e2d266b3877391a7cf7d1ca866722d8c1722d5656d6",
+	"signature": "5e2a5e50902cc4bcb3575cd63cf6e30f851c46e429a92d87423faf3211ce3c96",
+	"body-plain": "This is a test text body.",
+	"body-html": "<html><body><p>This is a test html body.<\/p><\/body><\/html>",
+	"stripped-html": "<div dir=\"ltr\">diana chau</div><div hspace=\"streak-pt-mark\" style=\"max-height:1px\"><img style=\"width:0px;max-height:0px;overflow:hidden\" src=\"https://mailfoogae.appspot.com/t?sender=aZmFuZ0BzMTAudHY%3D&amp;type=zerocontent&amp;guid=745a4613-e437-4f11-8d49-d932b6d2e5e3\"><font color=\"#ffffff\" size=\"1\">ᐧ</font></div>",
+	"stripped-text": "This is the reply text",
+	"stripped-signature": ""
 }

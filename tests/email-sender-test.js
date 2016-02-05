@@ -9,7 +9,7 @@ var mongoose = require('mongoose')
 
 import { find, count } from '../src/common.js'
 import EmailSender from '../src/email-sender';
-import MockPostmark from './mocks/MockPostmark';
+import MockMailer from './mocks/MockMailer';
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 
 describe('EmailSender', () => {
@@ -96,7 +96,7 @@ describe('EmailSender', () => {
    * Expect: an email gets sent to Tony.
    */
   describe('handleNewPostFromWeb', () => {
-    const postmarkClient = new MockPostmark();
+    const mailer = new MockMailer();
 
     beforeEach((done) => {
       new Post({
@@ -149,11 +149,11 @@ describe('EmailSender', () => {
     });
 
     it('should attempt to send emails to through postmark', (done) => {
-      new EmailSender(postmarkClient, 'dev.topics.princeton.chat')
+      new EmailSender(mailer, 'dev.topics.princeton.chat')
         .handleNewPostFromWeb('test-post-two')
         .then(() => {
-          expect(postmarkClient.mailQueue.length).to.equal(1);
-          const [mail] = postmarkClient.mailQueue;
+          expect(mailer.mailQueue.length).to.equal(1);
+          const [mail] = mailer.mailQueue;
           const expectedReturn = '';
 
           expect(mail.From).to.equal('Qiming Fang <notifications@princeton.chat>');
@@ -181,7 +181,7 @@ describe('EmailSender', () => {
    * Expect: an email gets sent to Tony.
    */
   describe('handleNewMessageFromWeb', () => {
-    const postmarkClient = new MockPostmark();
+    const mailer = new MockMailer();
 
     beforeEach((done) => {
       new User({
@@ -226,11 +226,11 @@ describe('EmailSender', () => {
     })
 
     it('should send emails per message', (done) => {
-      new EmailSender(postmarkClient, 'dev.topics.princeton.chat')
+      new EmailSender(mailer, 'dev.topics.princeton.chat')
         .handleNewMessageFromWeb('dianas-message')
         .then(() => {
-          expect(postmarkClient.mailQueue.length).to.equal(1);
-          const [mail] = postmarkClient.mailQueue;
+          expect(mailer.mailQueue.length).to.equal(1);
+          const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Diana Chau <notifications@princeton.chat>');
           expect(mail.CC).to.equal('tonyx@gmail.com');
@@ -249,10 +249,10 @@ describe('EmailSender', () => {
 
 
   describe('handleEmailReply', () => {
-    let postmarkClient = null;
+    let mailer = null;
 
     beforeEach(() => {
-      postmarkClient = new MockPostmark();
+      mailer = new MockMailer();
     })
 
     beforeEach((done) => {
@@ -287,8 +287,8 @@ describe('EmailSender', () => {
     describe('when the sender has an email that is not in the system', () => {
       const INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
       beforeEach((done) => {
-        INPUT.FromFull.Email = 'fake-email@gmail.com'
-        new EmailSender(postmarkClient, 'dev.topics.princeton.chat')
+        INPUT.from = 'fake-email@gmail.com'
+        new EmailSender(mailer, 'dev.topics.princeton.chat')
           .handleEmailReply(INPUT)
           .then(() => fail('should have thrown an error complaining that fake-email was not founds'))
           .catch(err => {
@@ -301,8 +301,8 @@ describe('EmailSender', () => {
         return count(Message, {})
         .then(count => {
           expect(count).to.equal(0);
-          expect(postmarkClient.mailQueue.length).to.equal(1);
-          const [ errorMail ] = postmarkClient.mailQueue;
+          expect(mailer.mailQueue.length).to.equal(1);
+          const [ errorMail ] = mailer.mailQueue;
           expect(errorMail.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Post Title');
           expect(errorMail.To).to.equal('fake-email@gmail.com');
           expect(errorMail.From).to.equal('Princeton.Chat <notifications@princeton.chat>');
@@ -324,9 +324,7 @@ describe('EmailSender', () => {
       })
 
       beforeEach(() => {
-        POST_INPUT.ToFull[0].MailboxHash = "";
-        POST_INPUT.ToFull[0].Email = 'cookies@dev.topics.princeton.chat';
-        POST_INPUT.To= 'cookies@dev.topics.princeton.chat';
+        POST_INPUT.recipient = 'cookies@dev.topics.princeton.chat';
       })
 
       beforeEach((done) => {
@@ -337,7 +335,7 @@ describe('EmailSender', () => {
       })
 
       it('should create a new post', (done) => {
-        new EmailSender(postmarkClient, 'dev.topics.princeton.chat')
+        new EmailSender(mailer, 'dev.topics.princeton.chat')
           .handleEmailReply(POST_INPUT)
           .then(() => {
             return find(Post, {})
@@ -373,12 +371,12 @@ describe('EmailSender', () => {
           })
         })
         .then(() => {
-          return new EmailSender(postmarkClient, 'dev.topics.princeton.chat')
+          return new EmailSender(mailer, 'dev.topics.princeton.chat')
             .handleEmailReply(POST_INPUT)
         })
         .then(() => {
-          expect(postmarkClient.mailQueue.length).to.equal(1);
-          const [email] = postmarkClient.mailQueue;
+          expect(mailer.mailQueue.length).to.equal(1);
+          const [email] = mailer.mailQueue;
 
           // briefly validate that email will be sent. The content of the email will be validated
           // later
@@ -390,19 +388,19 @@ describe('EmailSender', () => {
 
       describe('if the topic from the email does not exist', () => {
         beforeEach(() => {
-          POST_INPUT.ToFull[0].Email = 'iamawesome@dev.topics.princeton.chat';
+          POST_INPUT.recipient = 'Awesome Man <iamawesome@dev.topics.princeton.chat>';
         })
 
         it('should send an error email', (done) => {
-          new EmailSender(postmarkClient, 'dev.topics.princeton.chat')
+          new EmailSender(mailer, 'dev.topics.princeton.chat')
             .handleEmailReply(POST_INPUT)
           .then(() => {
             return count(Post, {})
           })
           .then(postCount => {
             expect(postCount).to.equal(0);
-            expect(postmarkClient.mailQueue.length).to.equal(1);
-            const [email] = postmarkClient.mailQueue;
+            expect(mailer.mailQueue.length).to.equal(1);
+            const [email] = mailer.mailQueue;
 
             expect(email.From).to.equal('Princeton.Chat <notifications@princeton.chat>');
             expect(email.To).to.equal('nurym@gmail.com');
@@ -430,10 +428,10 @@ describe('EmailSender', () => {
      */
     describe('when the sender has an email that is in the system', () => {
       it('should send emails to through postmark', (done) => {
-        new EmailSender(postmarkClient, 'dev.topics.princeton.chat').handleEmailReply(INBOUND_MAIL_DATA)
+        new EmailSender(mailer, 'dev.topics.princeton.chat').handleEmailReply(INBOUND_MAIL_DATA)
         .then(() => {
-          expect(postmarkClient.mailQueue.length).to.equal(1);
-          const [mail] = postmarkClient.mailQueue;
+          expect(mailer.mailQueue.length).to.equal(1);
+          const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Postmarkapp Support <notifications@princeton.chat>');
           expect(mail.CC).to.equal('diana@gmail.com');

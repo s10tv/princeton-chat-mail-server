@@ -8,6 +8,7 @@ import User from './models/user'
 import ReplyParser from './reply-parser'
 import secrets from './config/secrets'
 import logger from './logger'
+import Mailer from './mailer'
 
 var Promise = require('es6-promise').Promise
   , mongoose = require('mongoose')
@@ -17,8 +18,8 @@ var Promise = require('es6-promise').Promise
 
 export default class EmailSender {
 
-  constructor(postmarkClient) {
-    this.postmarkClient = postmarkClient;
+  constructor(mailer) {
+    this.mailer = mailer;
   }
 
   /**
@@ -73,7 +74,7 @@ export default class EmailSender {
           HtmlBody: errorEmailContent,
         };
 
-        return this.__sendEmail(errorEmail)
+        return this.mailer.send(errorEmail);
       }
 
       const newPostId= uuid.v4()
@@ -164,7 +165,7 @@ export default class EmailSender {
         };
       })
 
-      return this.__sendBatchEmails(emailsToSend)
+      return this.mailer.sendBatchEmails(emailsToSend);
     })
   }
 
@@ -210,7 +211,7 @@ export default class EmailSender {
         };
       })
 
-      return this.__sendBatchEmails(emailsToSend);
+      return this.mailer.sendBatchEmails(emailsToSend);
     })
   }
 
@@ -273,7 +274,7 @@ export default class EmailSender {
         };
       })
 
-      return this.__sendBatchEmails(emailsToSend);
+      return this.mailer.sendBatchEmails(emailsToSend);
     })
   }
 
@@ -292,30 +293,6 @@ export default class EmailSender {
         TO privately reply to the sender, email<br />
           <a href='mailto:${address}'>${address}</a>
       </p>`
-  }
-
-  __sendBatchEmails(emailsToSend) {
-    return new Promise((resolve, reject) => {
-      this.postmarkClient.sendEmailBatch(emailsToSend, (err, res) => {
-        if (err) {
-          return reject(err);
-        }
-
-        return resolve(res);
-      })
-    });
-  }
-
-  __sendEmail(email) {
-    return new Promise((resolve, reject) => {
-      this.postmarkClient.sendEmail(email, (err, res) => {
-        if (err) {
-          return reject(err);
-        }
-
-        return resolve(res);
-      })
-    })
   }
 
   __generateHash({ id, user }) {
@@ -359,7 +336,7 @@ export default class EmailSender {
 
         logger.info(errorEmail);
 
-        return this.__sendEmail(errorEmail)
+        return this.mailer.send(errorEmail)
         .then(() => {
           return Promise.reject(`${fromEmail} was not found. Sent error email`);
         })
