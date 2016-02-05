@@ -11,14 +11,15 @@ import logger from './logger'
 import secrets from './config/secrets'
 import { INFO } from './common'
 import EmailSender from './email-sender'
+import Mailer from './mailer'
 import pjson from '../package.json'
 
 export const app = express()
 const m = multer({})
 
 // injectable
-let PostmarkClient = new postmark.Client(secrets.postmark.token);
-let Sender = new EmailSender(PostmarkClient, secrets.topicMailServer, secrets.url);
+let mailer = new Mailer(secrets.topicMailServer);
+let Sender = new EmailSender(mailer, secrets.topicMailServer, secrets.url);
 let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
 
 mongoose.Promise = Promise
