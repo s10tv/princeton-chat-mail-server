@@ -56,8 +56,8 @@ export default class EmailSender {
       const [ topic ] = topics;
 
       if (!topic) {
-        const greeting = fromName && fromName.length > 0 ? `Hey ${fromName}<br /><br />,` : 'Hello!';
-        const errorEmailContent = `${greeting}
+        const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},` : 'Hello!';
+        const errorEmailContent = `${greeting}<br /><br />
           We just got your email to ${toEmail}, but it wasn't actually a list on Princeton.Chat.
           Please take a look at the correct list through our
           <a href='${secrets.url}/'>web portal</a>,
