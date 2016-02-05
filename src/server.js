@@ -47,11 +47,8 @@ app.get('/', (req, res) => {
 })
 
 app.post('/no-op', (req, res) => {
-  logger.info('no-op');
   console.log(req.body);
-  logger.info(req.body, (err) => {
-    return res.sendStatus(200);
-  });
+  return res.sendStatus(200);
 })
 
 app.post('/postmark-message-reply', (req, res) => {
