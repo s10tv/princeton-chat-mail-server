@@ -160,7 +160,7 @@ export default class EmailSender {
           From: `${fromName} <${fromEmail}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `[Princeton.Chat] RE: ${this.post.title}`,
+          Subject: `[Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
@@ -206,7 +206,7 @@ export default class EmailSender {
           From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `[Princeton.Chat] RE: ${this.post.title}`,
+          Subject: `[Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })

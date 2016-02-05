@@ -234,7 +234,7 @@ describe('EmailSender', () => {
           expect(mail.From).to.equal('Diana Chau <diana@gmail.com>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+super-bowl@dev.posts.princeton.chat>');
-          expect(mail.Subject).to.equal('[Princeton.Chat] RE: Super Bowl');
+          expect(mail.Subject).to.equal('[Princeton.Chat] Super Bowl');
           expect(mail.HtmlBody).to.contain('i love it');
 
           done()
@@ -434,7 +434,7 @@ describe('EmailSender', () => {
           expect(mail.From).to.equal('Postmarkapp Support <nurym@gmail.com>');
           expect(mail.To).to.equal('<diana@gmail.com>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+POST_ID@dev.posts.princeton.chat>');
-          expect(mail.Subject).to.equal('[Princeton.Chat] RE: Post Title');
+          expect(mail.Subject).to.equal('[Princeton.Chat] Post Title');
           expect(mail.HtmlBody).to.contain('This is the reply text');
 
           return find(Message, {})
