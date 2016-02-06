@@ -1,5 +1,5 @@
 export default {
-	"recipient": "noop@dev.topics.princeton.chat",
+	"recipient": "reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat",
 	"subject": "Re: [Princeton.Chat] Sup sup",
 	"sender": "fang@s10.tv",
 	"from": "Qiming Fang <fang@taylrapp.com>",

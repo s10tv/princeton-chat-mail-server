@@ -19,6 +19,17 @@ describe('ReplyParser', () => {
     expect(ignoreEmail).to.equal(false);
   })
 
+  it('should ignore reply-all emails delivered to topic server', () => {
+    const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
+    TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
+    
+    const {
+      ignoreEmail,
+    } = new ReplyParser().parse(TO_TOPIC_MS_REPLY_ALL);
+
+    expect(ignoreEmail).to.equal(true)
+  })
+
   it('should parse reply-all correctly', () => {
     const {
       ignoreEmail,

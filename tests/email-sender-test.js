@@ -474,6 +474,18 @@ describe('EmailSender', () => {
         }).save(done);
       })
 
+      it('should ignore emails if the recipient is the topic MS to avoid dups', (done) => {
+        const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
+        TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
+
+        new EmailSender(mailer).handleEmailReply(TO_TOPIC_MS_REPLY_ALL)
+        .then(() => {
+          expect(mailer.mailQueue.length).to.equal(0);
+          done()
+        })
+        .catch(err => done(err))
+      })
+
       it('should send emails to all post and topic followers', (done) => {
         new EmailSender(mailer).handleEmailReply(REPLY_ALL_MAIL_DATA)
         .then(() => {

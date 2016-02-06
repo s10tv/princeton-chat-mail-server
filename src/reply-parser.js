@@ -13,13 +13,21 @@ export default class ReplyParser {
       content = emailResponse['body-plain'];
     }
 
+    // has to exist, otherwise, shouldnt have gotten delivered.
+    const recipientInfo = emailparser.parseOneAddress(emailResponse.recipient);
+    const isToTopicMS = recipientInfo.domain ==  secrets.topicMailServer;
+    const isToPostMS = recipientInfo.domain ==  secrets.postMailServer;
+
     const toInfos = emailResponse.To ? emailparser.parseAddressList(emailResponse.To) : [];
     const ccInfos = emailResponse.Cc ? emailparser.parseAddressList(emailResponse.Cc) : [];
 
     // There are 4 cases here: either
     // 1) { To: @topic } === start a new post via email
     // 2) { To: @post } === reply to a post
-    // 3) { To: @post, CC: @topic } === reply all to a post
+
+    // 3) { To: @post, CC: @topic } === (post server) reply all to a post
+    // 3.5) { To: @post, CC: @topic } === (topic server) ignore
+
     // 4) { TO: { personal }, CC: @topic }  === new post notification
 
     const toPostInfos = toInfos.filter(toInfo => toInfo.domain == secrets.postMailServer);
@@ -37,12 +45,17 @@ export default class ReplyParser {
       return null;
     }
 
+    let throwInvalidToFieldError = () => {
+      throw new Error(`unhandled email messageId: ${emailResponse['Message-Id']}, token: ${emailResponse['token']}`);
+    }
+
     let postInfo, topicInfo;
 
     let ignoreEmail = false
     let topicToPost = null
     let postId = null
     let topicsToNotify = []
+
 
     // case 1
     if (toPostInfos.length == 0 && toTopicInfos.length == 1) {
@@ -59,10 +72,17 @@ export default class ReplyParser {
 
     // case 3
     else if (toPostInfos.length == 1 && toTopicInfos.length == 0 && ccTopicInfos.length == 1) {
-      postInfo = toPostInfos[0]
-      topicInfo = ccTopicInfos[0];
-      postId = parsePostId(postInfo)
-      topicsToNotify = [ topicInfo.local ];
+
+      if (isToPostMS) {
+        postInfo = toPostInfos[0]
+        topicInfo = ccTopicInfos[0];
+        postId = parsePostId(postInfo)
+        topicsToNotify = [ topicInfo.local ];
+      } else if (isToTopicMS) {
+        ignoreEmail = true;
+      } else {
+        throwInvalidToFieldError()
+      }
     }
 
     // case 4
@@ -71,7 +91,7 @@ export default class ReplyParser {
     }
 
     else {
-      throw new Error(`unhandled email messageId: ${emailResponse['Message-Id']}, token: ${emailResponse['token']}`);
+      throwInvalidToFieldError()
     }
 
     const fromInfo = emailparser.parseOneAddress(emailResponse.from);
