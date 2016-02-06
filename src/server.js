@@ -49,6 +49,11 @@ app.get('/', (req, res) => {
   return res.json({ version: pjson.version });
 })
 
+app.get('/err', (req, res) => {
+  // to test our monitoring system
+  throw new Error('Error occurred');
+})
+
 app.post('/no-op', m.any(), (req, res) => {
   console.log('body');
   console.log(req.body['stripped-text'])
