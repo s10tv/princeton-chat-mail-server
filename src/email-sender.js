@@ -30,27 +30,26 @@ export default class EmailSender {
       fromName,
       fromEmail,
       postId,
-      toEmail,
+      topicToPost,
+      topicsToNotify,
       subject,
       content } = new ReplyParser(secrets.topicMailServer).parse(postmarkInput);
 
-    if (!postId) {
+    if (topicToPost) {
       // Possibly a new post since the email didn't come with a post id.
-      return this.__handleNewPostFromEmail({ fromEmail, fromName, toEmail, subject, content })
+      return this.__handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content })
     }
 
     // Possibly a reply to an existing post, since the message came witha  post id.
     return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content })
   }
 
-  __handleNewPostFromEmail({ fromEmail, fromName, toEmail, subject, content }) {
+  __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
     const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${subject}`;
     return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
     .then(senderUser => {
       this.senderUser = senderUser;
-
-      const [ topicId ] = toEmail.split('@')
-      return find(Topic, { _id: topicId })
+      return find(Topic, { _id: topicToPost })
     })
     .then(topics => {
       const [ topic ] = topics;
@@ -58,8 +57,8 @@ export default class EmailSender {
       if (!topic) {
         const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},` : 'Hello!';
         const errorEmailContent = `${greeting}<br /><br />
-          We just got your email to ${toEmail}, but it wasn't actually a list on Princeton.Chat.
-          Please take a look at the correct list through our
+          We just got your email to <b>${topicToPost}</b>, but it wasn't actually a list on Princeton.Chat.
+          Please take a look at the correct list email through our
           <a href='${secrets.url}/'>web portal</a>,
           and reply to let us know if you run into any issues.<br /><br /><br />
           --<br />

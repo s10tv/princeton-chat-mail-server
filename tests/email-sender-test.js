@@ -322,7 +322,7 @@ describe('EmailSender', () => {
       })
 
       beforeEach(() => {
-        POST_INPUT.To = 'cookies@dev.posts.princeton.chat';
+        POST_INPUT.To = 'cookies@dev.topics.princeton.chat';
       })
 
       beforeEach((done) => {
@@ -386,7 +386,7 @@ describe('EmailSender', () => {
 
       describe('if the topic from the email does not exist', () => {
         beforeEach(() => {
-          POST_INPUT.To = 'Awesome Man <iamawesome@dev.posts.princeton.chat>';
+          POST_INPUT.To = 'Awesome Man <iamawesome@dev.topics.princeton.chat>';
         })
 
         it('should send an error email', (done) => {
