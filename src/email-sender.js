@@ -11,8 +11,7 @@ import ReplyParser from './reply-parser'
 import secrets from './config/secrets'
 import logger from './logger'
 import Mailer from './mailer'
-
-
+import {generateHash} from './auth'
 
 export default class EmailSender {
 
@@ -294,14 +293,15 @@ export default class EmailSender {
 
     const [topicId] = post.topicIds
     const [{ address }] = sender.emails;
+    const hash = generateHash(recipient);
 
     return `
       <p>${content}</p>
       <p style="padding-top: 15px">
         --<br />
         Reply to this email directly or <a href='${secrets.url}/topics/${topicId}/${post._id}'>view it on Princeton.Chat</a><br />
-        You can also <a href='${secrets.url}/preferences/posts/${recipient._id}/${post._id}'>Unfollow</a>
-          this thread or <a href='${secrets.url}/preferences/topics/${recipient._id}'>Edit topics I follow</a>.<br />
+        You can also <a href='${secrets.url}/preferences/posts/${recipient._id}/${hash}/${post._id}/unfollow'>Unfollow</a>
+          this thread or <a href='${secrets.url}/guest/${recipient._id}/${hash}'>Edit topics I follow</a>.<br />
         To privately reply to the sender, email <a href='mailto:${address}'>${address}</a>
       </p>`
   }

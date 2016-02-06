@@ -12,6 +12,7 @@ import EmailSender from '../src/email-sender';
 import MockMailer from './mocks/MockMailer';
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
+import secrets from '../src/config/secrets'
 
 describe('EmailSender', () => {
 
@@ -88,6 +89,64 @@ describe('EmailSender', () => {
     })
   })
 
+  describe('__addFooter', () => {
+    const CONTENT = 'starbucks';
+    let testSender, testRecipient, testPost;
+
+    beforeEach((done) => {
+      new Post({
+        _id: 'test-post-two',
+        ownerId: 'qiming',
+        content: 'hello world',
+        topicIds: ['startups'],
+        title: 'Post Title',
+      }).save(done);
+    })
+
+    it('should render the footer with correct links', (done) => {
+
+      const expectedReturn =  `
+        <p>starbucks</p>
+        <p style="padding-top: 15px">
+          --<br />
+          Reply to this email directly or <a href='${secrets.url}/topics/startups/test-post-two'>view it on Princeton.Chat</a><br />
+          You can also <a href='${secrets.url}/preferences/posts/nurym/dbf419b8b7892a9e78ac0aaae665e9c755c02bf9bccb091933fd95d05a16cc45/test-post-two/unfollow'>Unfollow</a>
+            this thread or <a href='${secrets.url}/guest/nurym/dbf419b8b7892a9e78ac0aaae665e9c755c02bf9bccb091933fd95d05a16cc45'>Edit topics I follow</a>.<br />
+          To privately reply to the sender, email <a href='mailto:fang@taylrapp.com'>fang@taylrapp.com</a>
+        </p>
+      `
+
+      return find(User, { _id: 'qiming' })
+      .then(users => {
+        const [ qiming ] = users;
+        testSender = qiming
+        return find(User, { _id: 'nurym' })
+      })
+      .then(users => {
+        const [nurym] = users;
+        testRecipient = nurym;
+        return find(Post, { _id: 'test-post-two' })
+      })
+      .then(posts => {
+        const [post] = posts;
+        testPost = post;
+      })
+      .then(() => {
+        const actualValue = new EmailSender().__addFooter({
+          post: testPost,
+          content: CONTENT,
+          recipient: testRecipient,
+          sender: testSender,
+        })
+
+        // strip all spaces and newlines and test
+        expect(actualValue.replace(/[\r\n ]/g, "")).to.equal(expectedReturn.replace(/[\r\n ]/g, ""))
+        done()
+      })
+      .catch(err => done(err))
+    })
+  })
+
   /**
    * Context:
    *
@@ -104,7 +163,7 @@ describe('EmailSender', () => {
         _id: 'test-post-two',
         ownerId: 'qiming',
         content: 'hello world',
-        topicIds: 'startups',
+        topicIds: ['startups'],
         title: 'Post Title',
       }).save(done);
     })
