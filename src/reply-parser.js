@@ -14,16 +14,16 @@ export default class ReplyParser {
     }
 
     const toInfos = emailResponse.To ? emailparser.parseAddressList(emailResponse.To) : [];
-    const ccInfos = emailResponse.Cc ? emailparser.parseAddressList(emailResponse.CC) : [];
+    const ccInfos = emailResponse.Cc ? emailparser.parseAddressList(emailResponse.Cc) : [];
 
     // There are 2 cases here: either
     // 1) we find { To: @topic } === start a new post via email
     // 2) we find { To: @post } === reply to a post
     // 3) we find { To: @post, CC: @topic } === reply all to a post
 
-    const toPostInfos = toInfos.filter(toInfo => toInfo.domain === secrets.postMailServer);
-    const toTopicInfos = toInfos.filter(toInfo => toInfo.domain === secrets.topicMailServer);
-    const ccTopicInfos = ccInfos.filter(ccInfo => ccInfo.domain === secrets.topicMailServer);
+    const toPostInfos = toInfos.filter(toInfo => toInfo.domain == secrets.postMailServer);
+    const toTopicInfos = toInfos.filter(toInfo => toInfo.domain == secrets.topicMailServer);
+    const ccTopicInfos = ccInfos.filter(ccInfo => ccInfo.domain == secrets.topicMailServer);
 
     let parsePostId = (postInfo) => {
       if (postInfo && postInfo.local) {
@@ -44,22 +44,21 @@ export default class ReplyParser {
 
     // case 1
     if (toPostInfos.length == 0 && toTopicInfos.length == 1) {
-      [ topicInfo ] = toTopicInfos
+      topicInfo = toTopicInfos[0]
       postId = null
       topicToPost = topicInfo.local
     }
 
     // case 2
-    else if (toPostInfos.length == 1 && toTopicInfos.length == 0) {
-      [ postInfo ] =toPostInfos
+    else if (toPostInfos.length == 1 && toTopicInfos.length == 0 && ccTopicInfos.length == 0) {
+      postInfo = toPostInfos[0]
       postId = parsePostId(postInfo)
     }
 
     // case 3
-    else if (toPostInfos.length == 1 && ccTopicInfos.length == 1) {
-      [ postInfo ] =toPostInfos
-      [ topicInfo ] = ccTopicInfos;
-
+    else if (toPostInfos.length == 1 && toTopicInfos.length == 0 && ccTopicInfos.length == 1) {
+      postInfo = toPostInfos[0]
+      topicInfo = ccTopicInfos[0];
       postId = parsePostId(postInfo)
       topicsToNotify = [ topicInfo.local ];
     }
