@@ -12,6 +12,7 @@ var PostSchema = new Schema({
   ownerId: String,
   topicIds: [String],
   followers: [FollowerSchema],
+  createdAt: { type: Date, required: true, default: new Date() }
 });
 
 module.exports = mongoose.model('posts', PostSchema);

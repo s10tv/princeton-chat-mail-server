@@ -410,6 +410,7 @@ describe('EmailSender', () => {
             expect(post.title).to.equal('Test subject')
             expect(post.content).to.equal('This is the reply text')
             expect(post.topicIds.length).to.equal(1)
+            expect(post.createdAt).to.exist;
 
             const [ topicId ] = post.topicIds;
             expect(topicId).to.equal('cookies')
