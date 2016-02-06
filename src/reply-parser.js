@@ -3,6 +3,8 @@ import secrets from './config/secrets'
 
 export default class ReplyParser {
   parse(emailResponse) {
+    console.log(emailResponse);
+
     if (!emailResponse) {
       throw new Error('Empty response from mail server')
     }
@@ -12,11 +14,6 @@ export default class ReplyParser {
     if (!content) {
       content = emailResponse['body-plain'];
     }
-
-    // has to exist, otherwise, shouldnt have gotten delivered.
-    const recipientInfo = emailparser.parseOneAddress(emailResponse.recipient);
-    const isToTopicMS = recipientInfo.domain ==  secrets.topicMailServer;
-    const isToPostMS = recipientInfo.domain ==  secrets.postMailServer;
 
     const toInfos = emailResponse.To ? emailparser.parseAddressList(emailResponse.To) : [];
     const ccInfos = emailResponse.Cc ? emailparser.parseAddressList(emailResponse.Cc) : [];
@@ -72,6 +69,11 @@ export default class ReplyParser {
 
     // case 3
     else if (toPostInfos.length == 1 && toTopicInfos.length == 0 && ccTopicInfos.length == 1) {
+
+      // has to exist, otherwise, shouldnt have gotten delivered.
+      const recipientInfo = emailparser.parseOneAddress(emailResponse.recipient);
+      const isToTopicMS = recipientInfo ? recipientInfo.domain ==  secrets.topicMailServer : false;
+      const isToPostMS = recipientInfo ? recipientInfo.domain ==  secrets.postMailServer : false;
 
       if (isToPostMS) {
         postInfo = toPostInfos[0]
