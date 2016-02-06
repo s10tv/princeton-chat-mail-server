@@ -32,7 +32,6 @@
     "mailgun-js": "^0.7.7",
     "mongoose": "^4.3.6",
     "multer": "^1.1.0",
-    "postmark": "^1.2.1",
     "raygun": "^0.8.5",
     "supertest": "^1.1.0",
     "uuid": "^2.0.1",
