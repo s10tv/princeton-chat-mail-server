@@ -92,6 +92,7 @@ export default class EmailSender {
           userId: this.senderUser._id
         }],
         createdAt: new Date(),
+        numMsgs: 0,
       })
       .then(() => {
         return this.handleNewPostFromWeb(newPostId)

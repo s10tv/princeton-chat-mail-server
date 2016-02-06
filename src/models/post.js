@@ -10,6 +10,7 @@ var PostSchema = new Schema({
   title: String,
   content: String,
   ownerId: String,
+  numMsgs: { type: Number, default: 0 },
   topicIds: [String],
   followers: [FollowerSchema],
   createdAt: { type: Date, required: true, default: new Date() }
