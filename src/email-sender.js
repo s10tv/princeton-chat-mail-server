@@ -27,6 +27,7 @@ export default class EmailSender {
    */
   handleEmailReply(postmarkInput) {
     const {
+      ignoreEmail,
       fromName,
       fromEmail,
       postId,
@@ -35,13 +36,18 @@ export default class EmailSender {
       subject,
       content } = new ReplyParser(secrets.topicMailServer).parse(postmarkInput);
 
+    if (ignoreEmail) {
+      // drop this email because it does not need to be handled.
+      return Promise.resolve(true)
+    }
+
     if (topicToPost) {
       // Possibly a new post since the email didn't come with a post id.
       return this.__handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content })
     }
 
     // Possibly a reply to an existing post, since the message came witha  post id.
-    return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content })
+    return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify })
   }
 
   __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
@@ -93,8 +99,8 @@ export default class EmailSender {
     })
   }
 
-  __handleMessageFromEmail({ postId, fromEmail, fromName, content }) {
-    return this.__getPostInfoFromPostmark({ postId, fromEmail, fromName })
+  __handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify }) {
+    return this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
     .then(() => {
       // insert this as a message into our system
       const messageId = uuid.v4()
@@ -123,11 +129,12 @@ export default class EmailSender {
     })
     .then(() => {
       INFO(this.usersFollowingPost);
+      INFO(this.replyAllRecipients);
 
       const usersToNotify = {};
 
       // dedup users
-      this.usersFollowingPost.filter((user) => {
+      this.usersFollowingPost.concat(this.replyAllRecipients).filter((user) => {
         return user != undefined &&
           user.emails != undefined &&
           user.emails.length > 0 &&
@@ -159,6 +166,7 @@ export default class EmailSender {
         return {
           From: `${fromName} <${fromEmail}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
+          CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `RE: [Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
@@ -206,6 +214,7 @@ export default class EmailSender {
         return {
           From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
+          CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `RE: [Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
@@ -270,6 +279,7 @@ export default class EmailSender {
         return {
           From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
+          CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
           ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
           Subject: `[Princeton.Chat] ${this.post.title}`,
           HtmlBody: emailContent,
@@ -351,7 +361,7 @@ export default class EmailSender {
    * Sets:
    * [eveything in post info], senderUser
    */
-  __getPostInfoFromPostmark({ postId, fromEmail, fromName }) {
+  __getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify }) {
     return this.__getPostInfo(postId)
     .then(() => {
       const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${this.post.title}`;
@@ -359,6 +369,10 @@ export default class EmailSender {
     })
     .then(senderUser => {
       this.senderUser = senderUser;
+      return find(User, { followingTopics: { $in: topicsToNotify }})
+    })
+    .then(replyAllRecipients => {
+      this.replyAllRecipients = replyAllRecipients;
       return Promise.resolve(true);
     })
   }

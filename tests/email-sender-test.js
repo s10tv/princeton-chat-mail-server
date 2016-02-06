@@ -7,10 +7,11 @@ var mongoose = require('mongoose')
   , User = require('../src/models/user')
   , dbURI = 'mongodb://localhost:27017/test';
 
-import { find, count } from '../src/common.js'
+import { find, count, upsert } from '../src/common.js'
 import EmailSender from '../src/email-sender';
 import MockMailer from './mocks/MockMailer';
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
+import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
 
 describe('EmailSender', () => {
 
@@ -21,7 +22,7 @@ describe('EmailSender', () => {
 
   beforeEach((done) => {
     Topic.remove({}, done)
-  });
+    });
 
   beforeEach((done) => {
     Post.remove({}, done)
@@ -41,7 +42,7 @@ describe('EmailSender', () => {
       username: 'qiming',
       firstName: 'Qiming',
       lastName: 'Fang',
-      emails: [{ address: 'fang@gmail.com' }],
+      emails: [{ address: 'fang@taylrapp.com' }],
     }).save(done)
   });
 
@@ -156,8 +157,9 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
           const expectedReturn = '';
 
-          expect(mail.From).to.equal('Qiming Fang <fang@gmail.com>');
+          expect(mail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');
+          expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+test-post-two@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('[Princeton.Chat] Post Title');
           expect(mail.HtmlBody).to.contain('hello world');
@@ -233,6 +235,7 @@ describe('EmailSender', () => {
 
           expect(mail.From).to.equal('Diana Chau <diana@gmail.com>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');
+          expect(mail.CC).to.equal('sports <sports@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+super-bowl@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('RE: [Princeton.Chat] Super Bowl');
           expect(mail.HtmlBody).to.contain('i love it');
@@ -274,7 +277,7 @@ describe('EmailSender', () => {
     });
 
     /**
-     * Context:
+     * NEW-POST error (non-subscribed user not authorized to reply to posts)
      *
      * Qiming made a post.
      * Nurym replied to it via ** an email that is not in the system **
@@ -313,6 +316,9 @@ describe('EmailSender', () => {
       })
     })
 
+    /**
+     * NEW-POST test
+     */
     describe('when the sender sends an email to start a post', () => {
       const POST_INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
 
@@ -414,7 +420,101 @@ describe('EmailSender', () => {
     })
 
     /**
-     * Context:
+     * REPLY-ALL test
+     *
+     * Qiming made a post to topic 'noop'
+     * Diana is the only one who follows this post
+     * Diana also follows topic 'noop'
+     * Tony also follows topic 'noop'
+     * qiming REPLY-ALL'd to it via email
+     *
+     * Expect: a message gets generated (from nurym's reply)
+     * Expect: diana gets an email.
+     * Expect: tony gets an email.
+     */
+    describe('when the mail server gets a reply-all request', () => {
+       beforeEach((done) => {
+         new Topic({
+           _id: 'noop',
+           displayName: 'Snoopy without the S and the Y',
+           followers: [
+             { _id: '1', userId: 'dchau-reply-all'},
+             { _id: '2', userId: 'tonyx-reply-all'}]
+         }).save(done);
+       })
+
+      beforeEach((done) => {
+        new Post({
+          _id: 'd2cba2d8-4206-48cd-9fd4-3d8dca31a8ea',
+          title: 'long id',
+          content: 'dunno if i can handle it',
+          ownerId: 'qiming',
+          topicIds: 'noop',
+          followers: [{userId: 'dchau-reply-all'}]
+        }).save(done)
+      })
+
+      beforeEach((done) => {
+       new User({
+         _id: 'dchau-reply-all',
+         username: 'dchau',
+         emails: [{ address: 'dchau-reply-all@gmail.com'}],
+         emailPreference: 'all',
+         followingTopics: ['noop'],
+       }).save(done);
+      })
+
+      beforeEach((done) => {
+        new User({
+          _id: 'tonyx-reply-all',
+          username: 'tonyx',
+          emails: [{ address: 'tonyx-reply-all@gmail.com'}],
+          emailPreference: 'all',
+          followingTopics: ['noop'],
+        }).save(done);
+      })
+
+      it('should send emails to all post and topic followers', (done) => {
+        new EmailSender(mailer).handleEmailReply(REPLY_ALL_MAIL_DATA)
+        .then(() => {
+          expect(mailer.mailQueue.length).to.equal(2);
+          const [dchaumail, tonyxmail] = mailer.mailQueue;
+
+          expect(dchaumail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
+          expect(dchaumail.To).to.equal('<dchau-reply-all@gmail.com>');
+          expect(dchaumail.CC).to.equal('noop <noop@dev.topics.princeton.chat>');
+          expect(dchaumail.ReplyTo).to.equal('Princeton.Chat <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
+          expect(dchaumail.Subject).to.equal('RE: [Princeton.Chat] long id');
+          expect(dchaumail.HtmlBody).to.contain('hi');
+
+          expect(tonyxmail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
+          expect(tonyxmail.To).to.equal('<tonyx-reply-all@gmail.com>');
+          expect(tonyxmail.CC).to.equal('noop <noop@dev.topics.princeton.chat>');
+          expect(tonyxmail.ReplyTo).to.equal('Princeton.Chat <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
+          expect(tonyxmail.Subject).to.equal('RE: [Princeton.Chat] long id');
+          expect(tonyxmail.HtmlBody).to.contain('hi');
+
+          return find(Message, {})
+       })
+       .then(messages => {
+         expect(messages.length).to.equal(1);
+         const [message] = messages;
+
+         expect(message._id).to.exist;
+         expect(message.ownerId).to.equal('qiming');
+         expect(message.postId).to.equal('d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea');
+         expect(message.content).to.equal('hi');
+         expect(message.createdAt).to.exist;
+         return done();
+       })
+       .catch(err => {
+         return done(err);
+       })
+     })
+   })
+
+    /**
+     * REPLY test
      *
      * Qiming made a post.
      * Diana is the only one who follows this post
@@ -433,6 +533,7 @@ describe('EmailSender', () => {
 
           expect(mail.From).to.equal('Postmarkapp Support <nurym@gmail.com>');
           expect(mail.To).to.equal('<diana@gmail.com>');
+          expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+POST_ID@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('RE: [Princeton.Chat] Post Title');
           expect(mail.HtmlBody).to.contain('This is the reply text');

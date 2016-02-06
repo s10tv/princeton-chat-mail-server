@@ -15,6 +15,7 @@ export default class Mailer {
     const mail = {
       to: To,
       from: From,
+      cc: CC,
       'h:Reply-To': ReplyTo,
       'h:In-Reply-To': ReplyTo,
       subject: Subject,
