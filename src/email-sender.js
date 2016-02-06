@@ -90,7 +90,8 @@ export default class EmailSender {
         topicIds: [topic._id],
         followers: [{
           userId: this.senderUser._id
-        }]
+        }],
+        createdAt: new Date(),
       })
       .then(() => {
         return this.handleNewPostFromWeb(newPostId)
