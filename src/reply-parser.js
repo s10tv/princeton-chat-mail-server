@@ -3,8 +3,6 @@ import secrets from './config/secrets'
 
 export default class ReplyParser {
   parse(emailResponse) {
-    console.log(emailResponse);
-
     if (!emailResponse) {
       throw new Error('Empty response from mail server')
     }

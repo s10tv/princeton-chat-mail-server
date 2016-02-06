@@ -25,7 +25,9 @@ export default class EmailSender {
   /**
    * Handles replying to a post thread directly via email.
    */
-  handleEmailReply(postmarkInput) {
+  handleEmailReply(postedEmailInput) {
+    INFO(postedEmailInput);
+    
     const {
       ignoreEmail,
       fromName,
@@ -34,7 +36,7 @@ export default class EmailSender {
       topicToPost,
       topicsToNotify,
       subject,
-      content } = new ReplyParser(secrets.topicMailServer).parse(postmarkInput);
+      content } = new ReplyParser(secrets.topicMailServer).parse(postedEmailInput);
 
     if (ignoreEmail) {
       // drop this email because it does not need to be handled.
