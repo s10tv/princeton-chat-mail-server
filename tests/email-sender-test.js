@@ -110,8 +110,8 @@ describe('EmailSender', () => {
         <p style="padding-top: 15px">
           --<br />
           Reply to this email directly or <a href='${secrets.url}/topics/startups/test-post-two'>view it on Princeton.Chat</a><br />
-          You can also <a href='${secrets.url}/preferences/posts/nurym/dbf419b8b7892a9e78ac0aaae665e9c755c02bf9bccb091933fd95d05a16cc45/test-post-two/unfollow'>Unfollow</a>
-            this thread or <a href='${secrets.url}/guest/nurym/dbf419b8b7892a9e78ac0aaae665e9c755c02bf9bccb091933fd95d05a16cc45'>Edit topics I follow</a>.<br />
+          You can also <a href='${secrets.url}/preferences/posts/test-post-two/unfollow?userId=nurym&hash=dbf419b8b7892a9e78ac0aaae665e9c755c02bf9bccb091933fd95d05a16cc45'>Unfollow</a>
+            this thread or <a href='${secrets.url}/guest?userId=nurym&hash=dbf419b8b7892a9e78ac0aaae665e9c755c02bf9bccb091933fd95d05a16cc45'>Edit topics I follow</a>.<br />
           To privately reply to the sender, email <a href='mailto:fang@taylrapp.com'>fang@taylrapp.com</a>
         </p>
       `
