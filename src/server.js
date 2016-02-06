@@ -43,7 +43,6 @@ function handleError(err, res) {
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
-app.use(raygunClient.expressHandler);
 
 app.get('/', (req, res) => {
   return res.json({ version: pjson.version });
@@ -120,6 +119,7 @@ app.post('/web-message', (req, res) => {
     })
 })
 
+app.use(raygunClient.expressHandler);
 app.listen((process.env.PORT || 5000), function(err) {
   if (err) {
     console.log(err);
