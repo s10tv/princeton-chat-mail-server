@@ -1,7 +1,6 @@
 import path from 'path'
 import express from 'express'
 import mongoose from 'mongoose'
-import postmark from 'postmark'
 import bodyParser from 'body-parser'
 import multer from 'multer'
 import { Promise } from 'es6-promise'
@@ -61,19 +60,16 @@ app.post('/no-op', m.any(), (req, res) => {
   return res.sendStatus(200);
 })
 
-app.post('/postmark-message-reply', m.any(), (req, res) => {
-  const postmarkInfo = req.body;
+app.post('/email-reply', m.any(), (req, res) => {
+  const messageBody = req.body;
 
   // for some reason, replies to emails come with an extra email from notifications@ to our
   // reply email. If this happens, omit it.
-  if (postmarkInfo.From && postmarkInfo.From === 'notifications@princeton.chat') {
+  if (messageBody.From && messageBody.From === 'notifications@princeton.chat') {
     return res.send(200);
   }
 
-  logger.info('[postmark-message-reply]');
-  logger.info(postmarkInfo);
-
-  return Sender.handleEmailReply(postmarkInfo)
+  return Sender.handleEmailReply(messageBody)
     .then(() => {
       return handleSuccess('Postmark-Message success', res)
     })

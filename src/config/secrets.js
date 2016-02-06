@@ -6,9 +6,6 @@ export default {
     token: process.env.IRON_WORKER_TOKEN || '', //yHDJi7nNp3ZdD3FC3IOu
     project_id: process.env.IRON_WORKER_PROJECT_ID || '56abd7e8f254f20006000183',
   },
-  postmark: {
-    token: process.env.POSTMARK_TOKEN || 'ea859cd1-5add-4969-9053-b02fdd0ad956',
-  },
   raygun: {
     key: process.env.RAYGUN_APIKEY || ''
   },

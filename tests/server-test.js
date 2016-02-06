@@ -14,15 +14,15 @@ describe('Server', () => {
     app.__set__('Sender', Sender)
   })
 
-  it('should handle /postmark-message-reply', (done) => {
+  it('should handle /email-reply', (done) => {
     const POSTMARK_DATA = { test: 'true' }
 
     request('http://localhost:5000')
-      .post('/postmark-message-reply')
+      .post('/email-reply')
       .send(POSTMARK_DATA)
       .expect(200)
       .end(function(err, res) {
-        expect(Sender.postmarkInput).to.deep.equal({"test": "true"});
+        expect(Sender.emailBody).to.deep.equal({"test": "true"});
         done()
       });
   })

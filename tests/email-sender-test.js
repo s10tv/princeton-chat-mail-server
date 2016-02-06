@@ -149,7 +149,7 @@ describe('EmailSender', () => {
       }).save(done)
     });
 
-    it('should attempt to send emails to through postmark', (done) => {
+    it('should attempt to send emails to through mailer', (done) => {
       new EmailSender(mailer)
         .handleNewPostFromWeb('test-post-two')
         .then(() => {
@@ -537,7 +537,7 @@ describe('EmailSender', () => {
      * Expect: nurym follows the post now
      */
     describe('when the sender has an email that is in the system', () => {
-      it('should send emails to through postmark', (done) => {
+      it('should send emails to through mailer', (done) => {
         new EmailSender(mailer).handleEmailReply(INBOUND_MAIL_DATA)
         .then(() => {
           expect(mailer.mailQueue.length).to.equal(1);

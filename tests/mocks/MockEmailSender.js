@@ -1,6 +1,6 @@
 export default class MockEmailSender {
-  handleEmailReply(postmarkInput) {
-    this.postmarkInput = postmarkInput
+  handleEmailReply(emailBody) {
+    this.emailBody = emailBody 
     return Promise.resolve(true);
   }
 

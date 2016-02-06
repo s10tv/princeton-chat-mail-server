@@ -1,5 +1,7 @@
 import { upsert, update, find, INFO } from './common'
 import uuid from 'uuid'
+import mongoose from 'mongoose'
+import { Promise } from 'es6-promise'
 
 import Topic from './models/topic'
 import Post from './models/post'
@@ -10,11 +12,7 @@ import secrets from './config/secrets'
 import logger from './logger'
 import Mailer from './mailer'
 
-var Promise = require('es6-promise').Promise
-  , mongoose = require('mongoose')
-  , path = require('path')
-  , fs = require('fs')
-  , postmark = require("postmark");
+
 
 export default class EmailSender {
 
@@ -27,7 +25,7 @@ export default class EmailSender {
    */
   handleEmailReply(postedEmailInput) {
     INFO(postedEmailInput);
-    
+
     const {
       ignoreEmail,
       fromName,
