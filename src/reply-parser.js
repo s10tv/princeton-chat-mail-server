@@ -13,7 +13,14 @@ export default class ReplyParser {
       content = emailResponse['body-plain'];
     }
 
-    const toInfo = emailparser.parseOneAddress(emailResponse.recipient);
+    const toInfos = emailparser.parseAddressList(emailResponse.To);
+    const postToInfos = toInfos.filter(toInfo => toInfo.domain === secrets.postMailServer);
+
+    if (postToInfos.length != 1) {
+      throw new Error(`Must have exactly one @${secrets.postMailServer} in the TO field. Found ${postToInfos.length}.`)
+    }
+
+    const [toInfo] = postToInfos;
     const toEmail = toInfo.address;
     let postId = undefined;
     if (toInfo && toInfo.local) {
@@ -22,8 +29,6 @@ export default class ReplyParser {
         postId = splittedToAddress[1]
       }
     }
-
-    (toInfo && toInfo.local) ? toInfo.local : undefined;
 
     const fromInfo = emailparser.parseOneAddress(emailResponse.from);
     const fromName = fromInfo.name || '';

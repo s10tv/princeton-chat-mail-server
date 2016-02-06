@@ -387,7 +387,7 @@ export default class EmailSender {
     return find(Post, { _id: postId })
     .then(posts => {
       if (posts.length != 1) {
-        return Promise.reject(`Did not find exactly one post with id=${postId}`)
+        return Promise.reject(`Did not find exactly one post with id=${postId}. Found ${posts.length}`)
       }
 
       const [ post ] = posts;
