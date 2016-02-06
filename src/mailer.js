@@ -15,12 +15,16 @@ export default class Mailer {
     const mail = {
       to: To,
       from: From,
-      cc: CC,
       'h:Reply-To': ReplyTo,
       'h:In-Reply-To': ReplyTo,
       subject: Subject,
       html: HtmlBody,
     };
+
+    // Sometimes (when sending error emails, there are no CC addresses)
+    if (CC) {
+      mail.cc = CC;
+    }
 
     logger.info(mail)
 
