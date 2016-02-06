@@ -2,20 +2,26 @@ import { expect } from 'chai'
 import ReplyParser from '../src/reply-parser'
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
+import NEW_POST_MAIL_DATA from './data/new.post.mail.js'
 import ERROR_MULTIPLE_TO_DATA from './data/error.multiple.to.mail.js'
 
 describe('ReplyParser', () => {
 
   it('should parse reply correctly', () => {
-    const { fromName, fromEmail, postId, content,} = new ReplyParser().parse(INBOUND_MAIL_DATA);
+    const {
+      fromName, fromEmail, postId, content, ignoreEmail
+    } = new ReplyParser().parse(INBOUND_MAIL_DATA);
+
     expect(fromName).to.equal('Postmarkapp Support')
     expect(fromEmail).to.equal('nurym@gmail.com')
     expect(postId).to.equal('POST_ID')
     expect(content).to.equal('This is the reply text')
+    expect(ignoreEmail).to.equal(false);
   })
 
   it('should parse reply-all correctly', () => {
     const {
+      ignoreEmail,
       fromName,
       fromEmail,
       postId,
@@ -30,6 +36,14 @@ describe('ReplyParser', () => {
     expect(topicToPost).not.to.exist;
     expect(topicsToNotify).to.deep.equal(['noop'])
     expect(content).to.equal('hi')
+    expect(ignoreEmail).to.equal(false)
+  })
+
+  it('should parse new post emails correctly', () => {
+    const {
+      ignoreEmail
+    } = new ReplyParser().parse(NEW_POST_MAIL_DATA);
+    expect(ignoreEmail).to.equal(true)
   })
 
   it('should throw error if there is a @topic and @post in the TO field', () => {

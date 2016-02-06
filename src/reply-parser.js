@@ -16,10 +16,11 @@ export default class ReplyParser {
     const toInfos = emailResponse.To ? emailparser.parseAddressList(emailResponse.To) : [];
     const ccInfos = emailResponse.Cc ? emailparser.parseAddressList(emailResponse.Cc) : [];
 
-    // There are 2 cases here: either
-    // 1) we find { To: @topic } === start a new post via email
-    // 2) we find { To: @post } === reply to a post
-    // 3) we find { To: @post, CC: @topic } === reply all to a post
+    // There are 4 cases here: either
+    // 1) { To: @topic } === start a new post via email
+    // 2) { To: @post } === reply to a post
+    // 3) { To: @post, CC: @topic } === reply all to a post
+    // 4) { TO: { personal }, CC: @topic }  === new post notification
 
     const toPostInfos = toInfos.filter(toInfo => toInfo.domain == secrets.postMailServer);
     const toTopicInfos = toInfos.filter(toInfo => toInfo.domain == secrets.topicMailServer);
@@ -38,6 +39,7 @@ export default class ReplyParser {
 
     let postInfo, topicInfo;
 
+    let ignoreEmail = false
     let topicToPost = null
     let postId = null
     let topicsToNotify = []
@@ -63,6 +65,15 @@ export default class ReplyParser {
       topicsToNotify = [ topicInfo.local ];
     }
 
+    // case 4
+    else if (toPostInfos.length == 0 && toTopicInfos.length == 0 && ccTopicInfos.length == 1) {
+      ignoreEmail = true;
+    }
+
+    else {
+      throw new Error(`unhandled email messageId: ${emailResponse['Message-Id']}, token: ${emailResponse['token']}`);
+    }
+
     const fromInfo = emailparser.parseOneAddress(emailResponse.from);
     const fromName = fromInfo.name || '';
     const fromEmail = fromInfo.address;
@@ -76,6 +87,7 @@ export default class ReplyParser {
     }
 
     return {
+      ignoreEmail,
       fromName,
       fromEmail,
       content,
