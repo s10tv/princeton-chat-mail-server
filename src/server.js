@@ -5,6 +5,7 @@ import bodyParser from 'body-parser'
 import multer from 'multer'
 import { Promise } from 'es6-promise'
 import raygun from 'raygun'
+import i18n from 'i18n'
 
 import logger from './logger'
 import secrets from './config/secrets'
@@ -30,6 +31,12 @@ mongoose.connect(secrets.mongo, function(err, res) {
   }
 });
 
+i18n.configure({
+  locales:['princeton', 's10'],
+  directory: __dirname + '/locales'
+});
+i18n.setLocale(secrets.system);
+
 function handleSuccess(message, res) {
   return res.sendStatus(200);
 }
@@ -44,7 +51,10 @@ app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 app.get('/', (req, res) => {
-  return res.json({ version: pjson.version });
+  return res.json({
+    title: i18n.__('title'),
+    version: pjson.version
+  });
 })
 
 app.get('/err', (req, res) => {
@@ -62,12 +72,6 @@ app.post('/no-op', m.any(), (req, res) => {
 
 app.post('/email-reply', m.any(), (req, res) => {
   const messageBody = req.body;
-
-  // for some reason, replies to emails come with an extra email from notifications@ to our
-  // reply email. If this happens, omit it.
-  if (messageBody.From && messageBody.From === 'notifications@princeton.chat') {
-    return res.send(200);
-  }
 
   return Sender.handleEmailReply(messageBody)
     .then(() => {

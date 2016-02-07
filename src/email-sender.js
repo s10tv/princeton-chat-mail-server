@@ -2,6 +2,7 @@ import { upsert, update, find, INFO } from './common'
 import uuid from 'uuid'
 import mongoose from 'mongoose'
 import { Promise } from 'es6-promise'
+import i18n from 'i18n'
 
 import Topic from './models/topic'
 import Post from './models/post'
@@ -62,19 +63,19 @@ export default class EmailSender {
       if (!topic) {
         const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},` : 'Hello!';
         const errorEmailContent = `${greeting}<br /><br />
-          We just got your email to <b>${topicToPost}</b>, but it wasn't actually a list on Princeton.Chat.
-          Please take a look at the correct list email through our
+          We just got your email to <b>${topicToPost}</b>, but it wasn't actually a list on
+          ${i18n.__('title')}. Please take a look at the correct list email through our
           <a href='${secrets.url}/'>web portal</a>,
           and reply to let us know if you run into any issues.<br /><br /><br />
           --<br />
-          <a href='${secrets.url}'>New to Princeton.Chat</a>?
+          <a href='${secrets.url}'>New to ${i18n.__('title')}</a>?
         `
 
         const errorEmail = {
-          From: `Princeton.Chat <notifications@princeton.chat>`,
+          From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
           To: fromEmail,
-          ReplyTo: `Princeton.Chat <hello@princeton.chat>`,
-          Subject: `[Princeton.Chat] Problem Posting RE: ${subject}`,
+          ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
+          Subject: `[${i18n.__('title')}] Problem Posting RE: ${subject}`,
           HtmlBody: errorEmailContent,
         };
 
@@ -168,8 +169,8 @@ export default class EmailSender {
           From: `${fromName} <${fromEmail}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `RE: [Princeton.Chat] ${this.post.title}`,
+          ReplyTo: `${i18n.__('title')} <reply+${hash}@${secrets.postMailServer}>`,
+          Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
@@ -216,8 +217,8 @@ export default class EmailSender {
           From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `RE: [Princeton.Chat] ${this.post.title}`,
+          ReplyTo: `${i18n.__('title')} <reply+${hash}@${secrets.postMailServer}>`,
+          Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
@@ -281,8 +282,8 @@ export default class EmailSender {
           From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `Princeton.Chat <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `[Princeton.Chat] ${this.post.title}`,
+          ReplyTo: `${i18n.__('title')} <reply+${hash}@${secrets.postMailServer}>`,
+          Subject: `[${i18n.__('title')}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
@@ -340,9 +341,9 @@ export default class EmailSender {
         `
 
         const errorEmail = {
-          From: `Princeton.Chat <notifications@princeton.chat>`,
+          From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
           To: fromEmail,
-          ReplyTo: `Princeton.Chat <hello@princeton.chat>`,
+          ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
           Subject: errorEmailSubject,
           HtmlBody: errorEmailContent,
         };
@@ -366,7 +367,7 @@ export default class EmailSender {
   __getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify }) {
     return this.__getPostInfo(postId)
     .then(() => {
-      const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${this.post.title}`;
+      const errorEmailSubject = `[${i18n.__('title')}] Problem Posting RE: ${this.post.title}`;
       return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
     })
     .then(senderUser => {

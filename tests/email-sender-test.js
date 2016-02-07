@@ -365,8 +365,8 @@ describe('EmailSender', () => {
           const [ errorMail ] = mailer.mailQueue;
           expect(errorMail.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Post Title');
           expect(errorMail.To).to.equal('fake-email@gmail.com');
-          expect(errorMail.From).to.equal('Princeton.Chat <notifications@princeton.chat>');
-          expect(errorMail.ReplyTo).to.equal('Princeton.Chat <hello@princeton.chat>');
+          expect(errorMail.From).to.equal('Princeton.Chat <notifications@dev.princeton.chat>');
+          expect(errorMail.ReplyTo).to.equal('Princeton.Chat <hello@dev.princeton.chat>');
           expect(errorMail.HtmlBody.length).to.be.greaterThan(0);
 
           done();
@@ -467,10 +467,10 @@ describe('EmailSender', () => {
             expect(mailer.mailQueue.length).to.equal(1);
             const [email] = mailer.mailQueue;
 
-            expect(email.From).to.equal('Princeton.Chat <notifications@princeton.chat>');
+            expect(email.From).to.equal('Princeton.Chat <notifications@dev.princeton.chat>');
             expect(email.To).to.equal('nurym@gmail.com');
             expect(email.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Test subject');
-            expect(email.ReplyTo).to.equal('Princeton.Chat <hello@princeton.chat>');
+            expect(email.ReplyTo).to.equal('Princeton.Chat <hello@dev.princeton.chat>');
             expect(email.HtmlBody).to.exist;
 
             done()
