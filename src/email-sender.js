@@ -164,9 +164,13 @@ export default class EmailSender {
           recipient: user,
         });
         const toName = this.parseDisplayName(user);
+        // TODO: Support posts with mutiple topics
+        // They Every topic should appear in the cc field and also subject line
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-        const [topic] = find(Topic, { _id: topicToPost })
+        const [topic] = find(Topic, { _id: topicId })
 
+        // TODO: What kind of escaping / sanitization do we need to do to topic
+        // and other user supplied string here?
         return {
           From: `${fromName} <${fromEmail}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
@@ -280,7 +284,7 @@ export default class EmailSender {
         const hash = this.post._id;
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
         
-        const [topic] = find(Topic, { _id: topicToPost })
+        const [topic] = find(Topic, { _id: topicId })
 
         return {
           From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
