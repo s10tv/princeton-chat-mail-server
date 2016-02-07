@@ -178,7 +178,7 @@ export default class EmailSender {
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
           ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `[${tag}] ${this.post.title}`,
+          Subject: `RE: [${tag}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
@@ -220,13 +220,15 @@ export default class EmailSender {
           recipient: user,
         });
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+        // TODO: Fix me, similar issue as above
+        const tag = `#${topicId}`
 
         return {
           From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `${i18n.__('title')} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
+          ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
+          Subject: `RE: [${tag}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })

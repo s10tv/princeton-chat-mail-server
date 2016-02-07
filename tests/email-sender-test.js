@@ -219,8 +219,8 @@ describe('EmailSender', () => {
           expect(mail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');
           expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
-          expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+test-post-two@dev.posts.princeton.chat>');
-          expect(mail.Subject).to.equal('[Princeton.Chat] Post Title');
+          expect(mail.ReplyTo).to.equal('Post Title <reply+test-post-two@dev.posts.princeton.chat>');
+          expect(mail.Subject).to.equal('[#startups] Post Title');
           expect(mail.HtmlBody).to.contain('hello world');
 
           done()
@@ -295,8 +295,8 @@ describe('EmailSender', () => {
           expect(mail.From).to.equal('Diana Chau <diana@gmail.com>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');
           expect(mail.CC).to.equal('sports <sports@dev.topics.princeton.chat>');
-          expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+super-bowl@dev.posts.princeton.chat>');
-          expect(mail.Subject).to.equal('RE: [Princeton.Chat] Super Bowl');
+          expect(mail.ReplyTo).to.equal('Super Bowl <reply+super-bowl@dev.posts.princeton.chat>');
+          expect(mail.Subject).to.equal('RE: [#sports] Super Bowl');
           expect(mail.HtmlBody).to.contain('i love it');
 
           done()
@@ -556,15 +556,15 @@ describe('EmailSender', () => {
           expect(dchaumail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
           expect(dchaumail.To).to.equal('<dchau-reply-all@gmail.com>');
           expect(dchaumail.CC).to.equal('noop <noop@dev.topics.princeton.chat>');
-          expect(dchaumail.ReplyTo).to.equal('Princeton.Chat <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
-          expect(dchaumail.Subject).to.equal('RE: [Princeton.Chat] long id');
+          expect(dchaumail.ReplyTo).to.equal('long id <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
+          expect(dchaumail.Subject).to.equal('RE: [#noop] long id');
           expect(dchaumail.HtmlBody).to.contain('hi');
 
           expect(tonyxmail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
           expect(tonyxmail.To).to.equal('<tonyx-reply-all@gmail.com>');
           expect(tonyxmail.CC).to.equal('noop <noop@dev.topics.princeton.chat>');
-          expect(tonyxmail.ReplyTo).to.equal('Princeton.Chat <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
-          expect(tonyxmail.Subject).to.equal('RE: [Princeton.Chat] long id');
+          expect(tonyxmail.ReplyTo).to.equal('long id <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
+          expect(tonyxmail.Subject).to.equal('RE: [#noop] long id');
           expect(tonyxmail.HtmlBody).to.contain('hi');
 
           return find(Message, {})
@@ -607,8 +607,8 @@ describe('EmailSender', () => {
           expect(mail.From).to.equal('Postmarkapp Support <nurym@gmail.com>');
           expect(mail.To).to.equal('<diana@gmail.com>');
           expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
-          expect(mail.ReplyTo).to.equal('Princeton.Chat <reply+POST_ID@dev.posts.princeton.chat>');
-          expect(mail.Subject).to.equal('RE: [Princeton.Chat] Post Title');
+          expect(mail.ReplyTo).to.equal('Post Title <reply+POST_ID@dev.posts.princeton.chat>');
+          expect(mail.Subject).to.equal('RE: [#startups] Post Title');
           expect(mail.HtmlBody).to.contain('This is the reply text');
 
           return find(Message, {})
