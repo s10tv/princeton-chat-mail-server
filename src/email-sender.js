@@ -1,6 +1,7 @@
 import { upsert, update, find, INFO } from './common'
 import uuid from 'uuid'
 import mongoose from 'mongoose'
+import truncate from 'truncate'
 import { Promise } from 'es6-promise'
 import i18n from 'i18n'
 
@@ -164,13 +165,14 @@ export default class EmailSender {
         });
         const toName = this.parseDisplayName(user);
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+        const [topic] = find(Topic, { _id: topicToPost })
 
         return {
           From: `${fromName} <${fromEmail}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `${i18n.__('title')} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
+          ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
+          Subject: `[#${topic.displayName}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
@@ -277,13 +279,15 @@ export default class EmailSender {
         const toName = this.parseDisplayName(user)
         const hash = this.post._id;
         const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+        
+        const [topic] = find(Topic, { _id: topicToPost })
 
         return {
           From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
           To: `${toName} <${email.address}>`.trim(),
           CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `${i18n.__('title')} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `[${i18n.__('title')}] ${this.post.title}`,
+          ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
+          Subject: `[#${topic.displayName}] ${this.post.title}`,
           HtmlBody: emailContent,
         };
       })
