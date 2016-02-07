@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./src/main.js",
     "watch": "nodemon ./src/main.js",
-    "test": "mocha --compilers js:babel-register --recursive tests"
+    "test": "mocha --compilers js:babel-register --require babel-polyfill --recursive tests"
   },
   "engines": {
     "node": ">=4.0.0"

@@ -24,7 +24,7 @@ export default class EmailSender {
   /**
    * Handles replying to a post thread directly via email.
    */
-  handleEmailReply(postedEmailInput) {
+  async handleEmailReply(postedEmailInput) {
     INFO(postedEmailInput);
 
     const {
@@ -39,7 +39,7 @@ export default class EmailSender {
 
     if (ignoreEmail) {
       // drop this email because it does not need to be handled.
-      return Promise.resolve(true)
+      return true
     }
 
     if (topicToPost) {
@@ -51,55 +51,47 @@ export default class EmailSender {
     return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify })
   }
 
-  __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
+  async __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
     const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${subject}`;
-    return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
-    .then(senderUser => {
-      this.senderUser = senderUser;
-      return find(Topic, { _id: topicToPost })
+    const senderUser = await this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
+    const topics = await Topic.find({ _id: topicToPost })
+    const [ topic ] = topics;
+
+    if (!topic) {
+      const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},` : 'Hello!';
+      const errorEmailContent = `${greeting}<br /><br />
+        We just got your email to <b>${topicToPost}</b>, but it wasn't actually a list on
+        ${i18n.__('title')}. Please take a look at the correct list email through our
+        <a href='${secrets.url}/'>web portal</a>,
+        and reply to let us know if you run into any issues.<br /><br /><br />
+        --<br />
+        <a href='${secrets.url}'>New to ${i18n.__('title')}</a>?
+      `
+
+      const errorEmail = {
+        From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
+        To: fromEmail,
+        ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
+        Subject: `[${i18n.__('title')}] Problem Posting RE: ${subject}`,
+        HtmlBody: errorEmailContent,
+      };
+
+      return this.mailer.send(errorEmail);
+    }
+    const newPostId = uuid.v4()
+    await upsert(Post, { _id: newPostId}, {
+      _id: newPostId,
+      title: subject,
+      content: content,
+      ownerId: senderUser._id,
+      topicIds: [topic._id],
+      followers: [{
+        userId: senderUser._id
+      }],
+      createdAt: new Date(),
+      numMsgs: 0,
     })
-    .then(topics => {
-      const [ topic ] = topics;
-
-      if (!topic) {
-        const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},` : 'Hello!';
-        const errorEmailContent = `${greeting}<br /><br />
-          We just got your email to <b>${topicToPost}</b>, but it wasn't actually a list on
-          ${i18n.__('title')}. Please take a look at the correct list email through our
-          <a href='${secrets.url}/'>web portal</a>,
-          and reply to let us know if you run into any issues.<br /><br /><br />
-          --<br />
-          <a href='${secrets.url}'>New to ${i18n.__('title')}</a>?
-        `
-
-        const errorEmail = {
-          From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
-          To: fromEmail,
-          ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
-          Subject: `[${i18n.__('title')}] Problem Posting RE: ${subject}`,
-          HtmlBody: errorEmailContent,
-        };
-
-        return this.mailer.send(errorEmail);
-      }
-
-      const newPostId= uuid.v4()
-      return upsert(Post, { _id: newPostId}, {
-        _id: newPostId,
-        title: subject,
-        content: content,
-        ownerId: this.senderUser._id,
-        topicIds: [topic._id],
-        followers: [{
-          userId: this.senderUser._id
-        }],
-        createdAt: new Date(),
-        numMsgs: 0,
-      })
-      .then(() => {
-        return this.handleNewPostFromWeb(newPostId)
-      })
-    })
+    return this.handleNewPostFromWeb(newPostId)
   }
 
   __handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify }) {
@@ -338,39 +330,35 @@ export default class EmailSender {
     }
   }
 
-  __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
-    return find(User, { 'emails.address': fromEmail })
-    .then(users => {
-      const [senderUser] = users;
+  async __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
+    const users = await User.find({ 'emails.address': fromEmail })
+    const [senderUser] = users;
 
-      if (!senderUser) {
-        const greeting = fromName && fromName.length > 0 ? `Hey ${fromName}<br /><br />,` : 'Hello!';
-        const errorEmailContent = `${greeting}
-          Seems like your email address <a href='mailto:${fromEmail}'>${fromEmail}</a> was not a registered email on
-          Princeton.Chat. Please check your <a href='${secrets.url}/settings'>notification preferences</a>,
-          and reply to let us know if you run into any issues.<br /><br /><br />
-          --<br />
-          Want to <a href='${secrets.url}'>Register</a>?
-        `
+    if (!senderUser) {
+      const greeting = fromName && fromName.length > 0 ? `Hey ${fromName}<br /><br />,` : 'Hello!';
+      const errorEmailContent = `${greeting}
+        Seems like your email address <a href='mailto:${fromEmail}'>${fromEmail}</a> was not a registered email on
+        Princeton.Chat. Please check your <a href='${secrets.url}/settings'>notification preferences</a>,
+        and reply to let us know if you run into any issues.<br /><br /><br />
+        --<br />
+        Want to <a href='${secrets.url}'>Register</a>?
+      `
 
-        const errorEmail = {
-          From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
-          To: fromEmail,
-          ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
-          Subject: errorEmailSubject,
-          HtmlBody: errorEmailContent,
-        };
+      const errorEmail = {
+        From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
+        To: fromEmail,
+        ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
+        Subject: errorEmailSubject,
+        HtmlBody: errorEmailContent,
+      };
 
-        logger.info(errorEmail);
+      logger.info(errorEmail);
 
-        return this.mailer.send(errorEmail)
-        .then(() => {
-          return Promise.reject(`${fromEmail} was not found. Sent error email`);
-        })
-      }
+      await this.mailer.send(errorEmail)
+      return Promise.reject(`${fromEmail} was not found. Sent error email`)
+    }
 
-      return Promise.resolve(senderUser)
-    })
+    return senderUser
   }
 
   /**

@@ -41,7 +41,7 @@ export function count(schema, query) {
 }
 
 export function find(schema, query) {
-  return findObjects(schema, query);
+  return schema.find(query)
 }
 
 export function upsert(schema, identifier, query) {
