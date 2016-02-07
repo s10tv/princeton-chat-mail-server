@@ -19,7 +19,7 @@ deployment:
   dev:
     branch: master
     heroku:
-      appname: princeton-chat-mail-server-dev
+      appname: taylr-chat-mail-server-dev
   prod:
     branch: prod
     heroku:
