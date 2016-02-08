@@ -222,7 +222,6 @@ describe('EmailSender', () => {
           expect(mail.ReplyTo).to.equal('Post Title <reply+test-post-two@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('[#startups] Post Title');
           expect(mail.HtmlBody).to.contain('hello world');
-
           done()
         })
         .catch(err => {
@@ -299,6 +298,12 @@ describe('EmailSender', () => {
           expect(mail.Subject).to.equal('RE: [#sports] Super Bowl');
           expect(mail.HtmlBody).to.contain('i love it');
 
+          return find(Post, {_id: 'super-bowl'})
+        })
+        .then((posts) => {
+          const [post] = posts;
+          expect(post.lastMessageText).to.equal('i love it')
+          expect(post.lastMessageId).to.equal('dianas-message')
           done()
         })
         .catch(err => {
@@ -633,9 +638,12 @@ describe('EmailSender', () => {
         })
         .then(posts => {
           const [ existingPost ] = posts;
+          
           const [ nurymFollower ] = existingPost.followers.filter(follower => follower.userId == 'nurym');
-
           expect(nurymFollower).to.exist;
+
+          expect(existingPost.lastMessageText).to.equal('This is the reply text')
+          expect(existingPost.lastMessageId).to.exist;
           done();
         })
         .catch(err => {

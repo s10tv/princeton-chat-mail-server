@@ -99,14 +99,16 @@ export default class EmailSender {
 
     // insert this as a message into our system
     const messageId = uuid.v4()
-    await upsert(Message, { _id: messageId }, {
+    const messageBody = {
       _id: messageId,
       ownerId: this.senderUser._id,
       postId: this.post._id,
       content: content,
       source: 'email',
       createdAt: new Date(),
-    })
+    }
+    await upsert(Message, { _id: messageId }, messageBody)
+    await this.__onNewMessage(messageBody)
 
     // this user is not already following the post, make the user follow the post.
     if (this.post.followers.filter(follower => follower.userId == this.senderUser._id).length == 0) {
@@ -179,6 +181,8 @@ export default class EmailSender {
    */
   async handleNewMessageFromWeb(messageId) {
     await this.__getMessageInfo(messageId)
+
+    await this.__onNewMessage(this.message)
 
     // dedup
     const usersToNotify = {};
@@ -378,6 +382,13 @@ export default class EmailSender {
 
     const [ users ] = usersFollowingTopic;
     this.usersFollowingTopic = users;
+  }
+
+  async __onNewMessage(message) {
+    await update(Post, { _id: message.postId }, { $set: {
+      lastMessageText: message.content,
+      lastMessageId: message._id,
+    }})
   }
 
   __addFooter({ content, post, sender, recipient }) {
