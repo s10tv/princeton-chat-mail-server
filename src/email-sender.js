@@ -94,240 +94,199 @@ export default class EmailSender {
     return this.handleNewPostFromWeb(newPostId)
   }
 
-  __handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify }) {
-    return this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
-    .then(() => {
-      // insert this as a message into our system
-      const messageId = uuid.v4()
-      return upsert(Message, { _id: messageId }, {
-        _id: messageId,
-        ownerId: this.senderUser._id,
-        postId: this.post._id,
-        content: content,
-        source: 'email',
-        createdAt: new Date(),
-      })
+  async __handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify }) {
+    await this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
+
+    // insert this as a message into our system
+    const messageId = uuid.v4()
+    await upsert(Message, { _id: messageId }, {
+      _id: messageId,
+      ownerId: this.senderUser._id,
+      postId: this.post._id,
+      content: content,
+      source: 'email',
+      createdAt: new Date(),
     })
-    .then(() => {
-      // this user is not already following the post, make the user follow the post.
-      if (this.post.followers.filter(follower => follower.userId == this.senderUser._id).length == 0) {
-          return update(Post, { _id: this.post._id }, { $push: {
-          followers: { userId: this.senderUser._id }
-        }}).then(() => {
-          return update(User, { _id: this.senderUser._id }, { $addToSet: {
-            followingPosts: this.post._id
-          }})
-        })
+
+    // this user is not already following the post, make the user follow the post.
+    if (this.post.followers.filter(follower => follower.userId == this.senderUser._id).length == 0) {
+      await update(Post, { _id: this.post._id }, { $push: {
+        followers: { userId: this.senderUser._id }
+      }})
+
+      await update(User, { _id: this.senderUser._id }, { $addToSet: {
+        followingPosts: this.post._id
+      }})
+    }
+
+    INFO(this.usersFollowingPost);
+    INFO(this.replyAllRecipients);
+
+    const usersToNotify = {};
+
+    // dedup users
+    this.usersFollowingPost.concat(this.replyAllRecipients).filter((user) => {
+      return user != undefined &&
+        user.emails != undefined &&
+        user.emails.length > 0 &&
+        user._id != this.senderUser._id &&
+        user.emailPreference == 'all';
+    }).forEach((user) => {
+      usersToNotify[user._id] = user;
+    });
+
+    const emailsToSend = Object.keys(usersToNotify).map((userId) => {
+      const user = usersToNotify[userId];
+      const [ email ] =  user.emails;
+
+      if (!email) {
+        INFO(`${user._id} does not have an email for notifications.`);
+        return Promise.resolve(true);
       }
 
-      return Promise.resolve(true);
-    })
-    .then(() => {
-      INFO(this.usersFollowingPost);
-      INFO(this.replyAllRecipients);
-
-      const usersToNotify = {};
-
-      // dedup users
-      this.usersFollowingPost.concat(this.replyAllRecipients).filter((user) => {
-        return user != undefined &&
-          user.emails != undefined &&
-          user.emails.length > 0 &&
-          user._id != this.senderUser._id &&
-          user.emailPreference == 'all';
-      }).forEach((user) => {
-        usersToNotify[user._id] = user;
+      const hash = postId;
+      const emailContent = this.__addFooter({
+        content,
+        post: this.post,
+        sender: this.senderUser,
+        recipient: user,
       });
+      const toName = this.parseDisplayName(user);
+      // TODO: Support posts with mutiple topics
+      // They Every topic should appear in the cc field and also subject line
+      const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+      // FIXME: For now assume topicId = topic.DisplayName
+      // const [topic] = find(Topic, { _id: topicId })
+      const tag = `#${topicId}`
 
-      const emailsToSend = Object.keys(usersToNotify).map((userId) => {
-        const user = usersToNotify[userId];
-        const [ email ] =  user.emails;
-
-        if (!email) {
-          INFO(`${user._id} does not have an email for notifications.`);
-          return Promise.resolve(true);
-        }
-
-        const hash = postId;
-        const emailContent = this.__addFooter({
-          content,
-          post: this.post,
-          sender: this.senderUser,
-          recipient: user,
-        });
-        const toName = this.parseDisplayName(user);
-        // TODO: Support posts with mutiple topics
-        // They Every topic should appear in the cc field and also subject line
-        const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-        // FIXME: For now assume topicId = topic.DisplayName
-        // const [topic] = find(Topic, { _id: topicId })
-        const tag = `#${topicId}`
-
-        // TODO: What kind of escaping / sanitization do we need to do to topic
-        // and other user supplied string here?
-        return {
-          From: `${fromName} <${fromEmail}>`.trim(),
-          To: `${toName} <${email.address}>`.trim(),
-          CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `RE: [${tag}] ${this.post.title}`,
-          HtmlBody: emailContent,
-        };
-      })
-
-      return this.mailer.sendBatchEmails(emailsToSend);
+      // TODO: What kind of escaping / sanitization do we need to do to topic
+      // and other user supplied string here?
+      return {
+        From: `${fromName} <${fromEmail}>`.trim(),
+        To: `${toName} <${email.address}>`.trim(),
+        CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
+        ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
+        Subject: `RE: [${tag}] ${this.post.title}`,
+        HtmlBody: emailContent,
+      };
     })
+
+    return this.mailer.sendBatchEmails(emailsToSend);
   }
 
   /**
    * For handling email generation for new messages (through web)
    */
-  handleNewMessageFromWeb(messageId) {
-    return this.__getMessageInfo(messageId)
-    .then(() => {
+  async handleNewMessageFromWeb(messageId) {
+    await this.__getMessageInfo(messageId)
 
-      // dedup
-      const usersToNotify = {};
-      this.usersFollowingPost.filter(user => {
-        return user != undefined &&
-          user._id != this.messageOwner._id &&
-          user.emails &&
-          user.emails.length > 0 &&
-          user.emailPreference === 'all';
-      }).forEach((user) => {
-        usersToNotify[user._id] = user;
+    // dedup
+    const usersToNotify = {};
+    this.usersFollowingPost.filter(user => {
+      return user != undefined &&
+        user._id != this.messageOwner._id &&
+        user.emails &&
+        user.emails.length > 0 &&
+        user.emailPreference === 'all';
+    }).forEach((user) => {
+      usersToNotify[user._id] = user;
+    });
+
+    const emailsToSend = Object.keys(usersToNotify).map((userId) => {
+      const user = usersToNotify[userId];
+      const [ email ] =  user.emails;
+
+      const fromName = this.parseDisplayName(this.messageOwner);
+      const toName = this.parseDisplayName(user);
+      const hash = this.post._id;
+      const emailContent = this.__addFooter({
+        content: this.message.content,
+        post: this.post,
+        sender: this.messageOwner,
+        recipient: user,
       });
+      const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+      // TODO: Fix me, similar issue as above
+      const tag = `#${topicId}`
 
-      const emailsToSend = Object.keys(usersToNotify).map((userId) => {
-        const user = usersToNotify[userId];
-        const [ email ] =  user.emails;
-
-        const fromName = this.parseDisplayName(this.messageOwner);
-        const toName = this.parseDisplayName(user);
-        const hash = this.post._id;
-        const emailContent = this.__addFooter({
-          content: this.message.content,
-          post: this.post,
-          sender: this.messageOwner,
-          recipient: user,
-        });
-        const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-        // TODO: Fix me, similar issue as above
-        const tag = `#${topicId}`
-
-        return {
-          From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
-          To: `${toName} <${email.address}>`.trim(),
-          CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `RE: [${tag}] ${this.post.title}`,
-          HtmlBody: emailContent,
-        };
-      })
-
-      return this.mailer.sendBatchEmails(emailsToSend);
+      return {
+        From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
+        To: `${toName} <${email.address}>`.trim(),
+        CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
+        ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
+        Subject: `RE: [${tag}] ${this.post.title}`,
+        HtmlBody: emailContent,
+      };
     })
+
+    return this.mailer.sendBatchEmails(emailsToSend);
   }
 
   /**
    * For handling email generation for new posts (through web).
    */
-  handleNewPostFromWeb(postId) {
-    return this.__getPostInfo(postId)
-    .then(() => {
-      const usersToNotify = {};
-      const dedupUserFn = (user) => {
-        usersToNotify[user._id] = user;
+  async handleNewPostFromWeb(postId) {
+    await this.__getPostInfo(postId)
+
+    const usersToNotify = {};
+    const dedupUserFn = (user) => {
+      usersToNotify[user._id] = user;
+    }
+
+    const filterUserFn = (user) => {
+      return user != undefined &&
+        user.emails != undefined &&
+        user.emails.length > 0 &&
+        user.emailPreference == 'all';
+    }
+
+    if (this.usersFollowingTopic) {
+      this.usersFollowingTopic.filter(filterUserFn).forEach(dedupUserFn);
+    }
+
+    if (this.usersFollowingPost) {
+      this.usersFollowingPost.filter(filterUserFn).forEach(dedupUserFn);
+    }
+
+    // Don't need to send myself an email.
+    delete usersToNotify[this.post.ownerId];
+
+    // Generate the email content to send
+    const emailsToSend = Object.keys(usersToNotify).map((userId) => {
+      const user = usersToNotify[userId];
+      const [ email ] =  user.emails;
+
+      if (!email) {
+        INFO(`${user._id} does not have an email for notifications.`);
+        return Promise.resolve(true);
       }
 
-      const filterUserFn = (user) => {
-        return user != undefined &&
-          user.emails != undefined &&
-          user.emails.length > 0 &&
-          user.emailPreference == 'all';
-      }
+      const emailContent = this.__addFooter({
+        content: this.post.content,
+        post: this.post,
+        sender: this.postOwner,
+        recipient: user,
+      });
 
-      if (this.usersFollowingTopic) {
-        this.usersFollowingTopic.filter(filterUserFn).forEach(dedupUserFn);
-      }
+      const fromName = this.parseDisplayName(this.postOwner);
+      const toName = this.parseDisplayName(user)
+      const hash = this.post._id;
+      const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+      // TODO: same issues as above, fix me
+      // const [topic] = find(Topic, { _id: topicId })
+      const tag = `#${topicId}`
 
-      if (this.usersFollowingPost) {
-        this.usersFollowingPost.filter(filterUserFn).forEach(dedupUserFn);
-      }
-
-      // Don't need to send myself an email.
-      delete usersToNotify[this.post.ownerId];
-
-      // Generate the email content to send
-      const emailsToSend = Object.keys(usersToNotify).map((userId) => {
-        const user = usersToNotify[userId];
-        const [ email ] =  user.emails;
-
-        if (!email) {
-          INFO(`${user._id} does not have an email for notifications.`);
-          return Promise.resolve(true);
-        }
-
-        const emailContent = this.__addFooter({
-          content: this.post.content,
-          post: this.post,
-          sender: this.postOwner,
-          recipient: user,
-        });
-
-        const fromName = this.parseDisplayName(this.postOwner);
-        const toName = this.parseDisplayName(user)
-        const hash = this.post._id;
-        const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-        // TODO: same issues as above, fix me
-        // const [topic] = find(Topic, { _id: topicId })
-        const tag = `#${topicId}`
-
-        return {
-          From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
-          To: `${toName} <${email.address}>`.trim(),
-          CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
-          ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-          Subject: `[${tag}] ${this.post.title}`,
-          HtmlBody: emailContent,
-        };
-      })
-
-      return this.mailer.sendBatchEmails(emailsToSend);
+      return {
+        From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
+        To: `${toName} <${email.address}>`.trim(),
+        CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
+        ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
+        Subject: `[${tag}] ${this.post.title}`,
+        HtmlBody: emailContent,
+      };
     })
-  }
 
-  __addFooter({ content, post, sender, recipient }) {
-
-    const [topicId] = post.topicIds
-    const [{ address }] = sender.emails;
-    const hash = generateHash(recipient);
-
-    return `
-      <p>${content}</p>
-      <p style="padding-top: 15px">
-        --<br />
-        Reply to this email directly or <a href='${secrets.url}/topics/${topicId}/${post._id}'>view it on Princeton.Chat</a><br />
-        You can also <a href='${secrets.url}/guest/posts/${post._id}/unfollow?userId=${recipient._id}&hash=${hash}'>Unfollow</a>
-          this thread or <a href='${secrets.url}/guest?userId=${recipient._id}&hash=${hash}'>Edit topics I follow</a>.<br />
-        To privately reply to the sender, email <a href='mailto:${address}'>${address}</a>
-      </p>`
-  }
-
-  __generateHash({ id, user }) {
-    return `${id}_=_=${user._id}`
-  }
-
-  __parseHash(hash) {
-    if (!hash) {
-      return {}
-    }
-
-    const [id, userId] = hash.split('_=_=')
-    return {
-      id,
-      userId,
-    }
+    return this.mailer.sendBatchEmails(emailsToSend);
   }
 
   async __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
@@ -365,76 +324,93 @@ export default class EmailSender {
    * Sets:
    * [eveything in post info], senderUser
    */
-  __getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify }) {
-    return this.__getPostInfo(postId)
-    .then(() => {
-      const errorEmailSubject = `[${i18n.__('title')}] Problem Posting RE: ${this.post.title}`;
-      return this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
-    })
-    .then(senderUser => {
-      this.senderUser = senderUser;
-      return find(User, { followingTopics: { $in: topicsToNotify }})
-    })
-    .then(replyAllRecipients => {
-      this.replyAllRecipients = replyAllRecipients;
-      return Promise.resolve(true);
-    })
+  async __getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify }) {
+    await this.__getPostInfo(postId)
+
+    const errorEmailSubject = `[${i18n.__('title')}] Problem Posting RE: ${this.post.title}`;
+    this.senderUser = await this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
+
+    this.replyAllRecipients = await find(User, { followingTopics: { $in: topicsToNotify }})
   }
 
   /**
    * Sets:
    * [everything in post info] && messageOwnerId
    */
-  __getMessageInfo(messageId) {
-    return find(Message, { _id: messageId })
-    .then(messages => {
-      [ this.message ] = messages;
-      return find(User, { _id: this.message.ownerId });
-    }).then(users => {
-      [ this.messageOwner ] = users;
-      return this.__getPostInfo(this.message.postId)
-    })
+  async __getMessageInfo(messageId) {
+    let messages = await find(Message, { _id: messageId })
+    this.message = messages[0];
+
+    let messageOwners = await find(User, { _id: this.message.ownerId });
+    this.messageOwner = messageOwners[0]
+
+    return this.__getPostInfo(this.message.postId)
   }
 
   /**
    * Sets:
    * post, owner, usersFollowingPost, usersFollowingTopic
    */
-  __getPostInfo(postId) {
-    return find(Post, { _id: postId })
-    .then(posts => {
-      if (posts.length != 1) {
-        return Promise.reject(`Did not find exactly one post with id=${postId}. Found ${posts.length}`)
-      }
+  async __getPostInfo(postId) {
+    let posts = await find(Post, { _id: postId })
 
-      const [ post ] = posts;
-      this.post = post;
+    if (posts.length != 1) {
+      throw new Error(`Did not find exactly one post with id=${postId}. Found ${posts.length}`)
+    }
 
-      return find(User, { _id: this.post.ownerId })
-    })
-    .then(users => {
-      const [owner] = users;
-      if (!owner) {
-        return Promise.reject('The owner was not found for the post');
-      }
+    const [ post ] = posts;
+    this.post = post;
 
-      this.postOwner = owner;
-      return find(User, { followingPosts: postId });
-    })
-    .then((usersFollowingPost) => {
-      this.usersFollowingPost = usersFollowingPost;
+    const owners = await find(User, { _id: this.post.ownerId })
+    const [owner] = owners;
+    if (!owner) {
+      return Promise.reject('The owner was not found for the post');
+    }
+    this.postOwner = owner;
 
-      // get everyone who is following the topic
-      return Promise.all(this.post.topicIds.map((topicId) => {
-        return find(User, { followingTopics: topicId })
-      }));
-    })
-    .then((usersFollowingTopic) => {
-      const [ users ] = usersFollowingTopic;
-      this.usersFollowingTopic = users;
+    const usersFollowingPost = await find(User, { followingPosts: postId });
+    this.usersFollowingPost = usersFollowingPost;
 
-      return Promise.resolve(true);
-    })
+    // get everyone who is following the topic
+    const usersFollowingTopic = await Promise.all(this.post.topicIds.map((topicId) => {
+      return find(User, { followingTopics: topicId })
+    }));
+
+    const [ users ] = usersFollowingTopic;
+    this.usersFollowingTopic = users;
+  }
+
+  __addFooter({ content, post, sender, recipient }) {
+
+    const [topicId] = post.topicIds
+    const [{ address }] = sender.emails;
+    const hash = generateHash(recipient);
+
+    return `
+      <p>${content}</p>
+      <p style="padding-top: 15px">
+        --<br />
+        Reply to this email directly or <a href='${secrets.url}/topics/${topicId}/${post._id}'>view it on Princeton.Chat</a><br />
+        You can also <a href='${secrets.url}/guest/posts/${post._id}/unfollow?userId=${recipient._id}&hash=${hash}'>Unfollow</a>
+          this thread or <a href='${secrets.url}/guest?userId=${recipient._id}&hash=${hash}'>Edit topics I follow</a>.<br />
+        To privately reply to the sender, email <a href='mailto:${address}'>${address}</a>
+      </p>`
+  }
+
+  __generateHash({ id, user }) {
+    return `${id}_=_=${user._id}`
+  }
+
+  __parseHash(hash) {
+    if (!hash) {
+      return {}
+    }
+
+    const [id, userId] = hash.split('_=_=')
+    return {
+      id,
+      userId,
+    }
   }
 
   parseDisplayName(user) {
