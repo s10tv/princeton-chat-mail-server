@@ -103,7 +103,7 @@ export default class EmailSender {
       _id: messageId,
       ownerId: this.senderUser._id,
       postId: this.post._id,
-      content: content,
+      content: this.__formatContent(content),
       source: 'email',
       createdAt: new Date(),
     }
@@ -148,7 +148,7 @@ export default class EmailSender {
 
       const hash = postId;
       const emailContent = this.__addFooter({
-        content,
+        content: this.__formatContent(content),
         post: this.post,
         sender: this.senderUser,
         recipient: user,
@@ -204,7 +204,7 @@ export default class EmailSender {
       const toName = this.parseDisplayName(user);
       const hash = this.post._id;
       const emailContent = this.__addFooter({
-        content: this.message.content,
+        content: this.__formatContent(this.message.content),
         post: this.post,
         sender: this.messageOwner,
         recipient: user,
@@ -266,7 +266,7 @@ export default class EmailSender {
       }
 
       const emailContent = this.__addFooter({
-        content: this.post.content,
+        content: this.__formatContent(this.post.content),
         post: this.post,
         sender: this.postOwner,
         recipient: user,
@@ -406,6 +406,14 @@ export default class EmailSender {
           this thread or <a href='${secrets.url}/guest?userId=${recipient._id}&hash=${hash}'>Edit topics I follow</a>.<br />
         To privately reply to the sender, email <a href='mailto:${address}'>${address}</a>
       </p>`
+  }
+
+  __formatContent(content) {
+    if (!content) {
+      return '';
+    }
+
+    return content.replace(/(?:\r\n|\r|\n)/g, '<br />')
   }
 
   __generateHash({ id, user }) {

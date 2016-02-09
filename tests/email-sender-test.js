@@ -12,6 +12,7 @@ import EmailSender from '../src/email-sender';
 import MockMailer from './mocks/MockMailer';
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
+import NO_LINE_BREAK_CONTENT from './data/post-with-no-newline'
 import secrets from '../src/config/secrets'
 
 describe('EmailSender', () => {
@@ -86,6 +87,14 @@ describe('EmailSender', () => {
       const displayName = new EmailSender().parseDisplayName({});
 
       expect(displayName).to.equal('');
+    })
+  })
+
+  describe('__formatContent', () => {
+    it('should replace all newline characters with HTML line breaks', () => {
+      expect(new EmailSender().__formatContent(NO_LINE_BREAK_CONTENT.content)).to.equal(
+        'Hi Everyone,<br /><br />I heard you loud and clear'
+      )
     })
   })
 
@@ -413,7 +422,7 @@ describe('EmailSender', () => {
             const [post] = posts;
 
             expect(post.title).to.equal('Test subject')
-            expect(post.content).to.equal('This is the reply text')
+            expect(post.content).to.equal('This is the reply text\r\nQiming')
             expect(post.topicIds.length).to.equal(1)
             expect(post.numMsgs).to.equal(0)
             expect(post.createdAt).to.exist
@@ -614,7 +623,7 @@ describe('EmailSender', () => {
           expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Post Title <reply+POST_ID@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('RE: [startups] Post Title');
-          expect(mail.HtmlBody).to.contain('This is the reply text');
+          expect(mail.HtmlBody).to.contain('This is the reply text<br />Qiming');
 
           return find(Message, {})
         })
@@ -625,7 +634,7 @@ describe('EmailSender', () => {
           expect(message._id).to.exist;
           expect(message.ownerId).to.equal('nurym');
           expect(message.postId).to.equal('POST_ID');
-          expect(message.content).to.equal('This is the reply text');
+          expect(message.content).to.equal('This is the reply text<br />Qiming');
           expect(message.createdAt).to.exist;
 
           return find(User, { _id: 'nurym' })
@@ -642,7 +651,7 @@ describe('EmailSender', () => {
           const [ nurymFollower ] = existingPost.followers.filter(follower => follower.userId == 'nurym');
           expect(nurymFollower).to.exist;
 
-          expect(existingPost.lastMessageText).to.equal('This is the reply text')
+          expect(existingPost.lastMessageText).to.equal('This is the reply text<br />Qiming')
           expect(existingPost.lastMessageId).to.exist;
           done();
         })

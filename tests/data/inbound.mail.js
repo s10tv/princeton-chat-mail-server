@@ -24,6 +24,6 @@ export default {
 	"body-plain": "This is a test text body.",
 	"body-html": "<html><body><p>This is a test html body.<\/p><\/body><\/html>",
 	"stripped-html": "<div dir=\"ltr\">diana chau</div><div hspace=\"streak-pt-mark\" style=\"max-height:1px\"><img style=\"width:0px;max-height:0px;overflow:hidden\" src=\"https://mailfoogae.appspot.com/t?sender=aZmFuZ0BzMTAudHY%3D&amp;type=zerocontent&amp;guid=745a4613-e437-4f11-8d49-d932b6d2e5e3\"><font color=\"#ffffff\" size=\"1\">ᐧ</font></div>",
-	"stripped-text": "This is the reply text",
+	"stripped-text": "This is the reply text\r\nQiming",
 	"stripped-signature": ""
 }

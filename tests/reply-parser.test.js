@@ -15,14 +15,14 @@ describe('ReplyParser', () => {
     expect(fromName).to.equal('Postmarkapp Support')
     expect(fromEmail).to.equal('nurym@gmail.com')
     expect(postId).to.equal('POST_ID')
-    expect(content).to.equal('This is the reply text')
+    expect(content).to.equal('This is the reply text\r\nQiming')
     expect(ignoreEmail).to.equal(false);
   })
 
   it('should ignore reply-all emails delivered to topic server', () => {
     const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
     TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
-    
+
     const {
       ignoreEmail,
     } = new ReplyParser().parse(TO_TOPIC_MS_REPLY_ALL);
