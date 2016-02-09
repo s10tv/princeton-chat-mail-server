@@ -5,7 +5,7 @@ export default {
   // [ s10, princeton, classicaleffect ]
   system: process.env.AUDIENCE || 'princeton',
 
-  url: process.env.ROOT_URL || 'https://princeton-chat-core-dev.herokuapp.com',
+  url: process.env.ROOT_URL || 'https://taylr-chat-dev.herokuapp.com',
   mongo: process.env.MONGO_URL || 'mongodb://localhost/pchat',
   raygun: {
     key: process.env.RAYGUN_APIKEY || ''
