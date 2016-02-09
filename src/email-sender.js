@@ -103,7 +103,7 @@ export default class EmailSender {
       _id: messageId,
       ownerId: this.senderUser._id,
       postId: this.post._id,
-      content: this.__formatContent(content),
+      content: content,
       source: 'email',
       createdAt: new Date(),
     }

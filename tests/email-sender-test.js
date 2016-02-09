@@ -634,7 +634,7 @@ describe('EmailSender', () => {
           expect(message._id).to.exist;
           expect(message.ownerId).to.equal('nurym');
           expect(message.postId).to.equal('POST_ID');
-          expect(message.content).to.equal('This is the reply text<br />Qiming');
+          expect(message.content).to.equal('This is the reply text\r\nQiming');
           expect(message.createdAt).to.exist;
 
           return find(User, { _id: 'nurym' })
@@ -651,7 +651,7 @@ describe('EmailSender', () => {
           const [ nurymFollower ] = existingPost.followers.filter(follower => follower.userId == 'nurym');
           expect(nurymFollower).to.exist;
 
-          expect(existingPost.lastMessageText).to.equal('This is the reply text<br />Qiming')
+          expect(existingPost.lastMessageText).to.equal('This is the reply text\r\nQiming')
           expect(existingPost.lastMessageId).to.exist;
           done();
         })
