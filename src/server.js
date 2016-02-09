@@ -11,6 +11,7 @@ import logger from './logger'
 import secrets from './config/secrets'
 import { INFO } from './common'
 import EmailSender from './email-sender'
+import Slack from './slack'
 import Mailer from './mailer'
 import pjson from '../package.json'
 
@@ -21,6 +22,7 @@ const m = multer({})
 let mailer = new Mailer(secrets.topicMailServer);
 let Sender = new EmailSender(mailer, secrets.topicMailServer, secrets.url);
 let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
+let slackClient = new Slack();
 
 mongoose.Promise = Promise
 mongoose.connect(secrets.mongo, function(err, res) {
@@ -69,6 +71,24 @@ app.post('/no-op', m.any(), (req, res) => {
 
   return res.sendStatus(200);
 })
+
+app.post('/mailgun/pulse', m.any(), (req, res) => {
+  if (!req.body) {
+    res.sendStatus(200)
+  }
+
+  let { recipient, event, city, region } = req.body;
+  let mailId = req.body['message-id']
+
+  const message = `${recipient} ${event} our mail (${mailId}) from ${city}, ${region}`
+  return slackClient.pulse(message)
+  .then(() => {
+    return res.sendStatus(200)
+  })
+  .catch(err => {
+    return res.sendStatus(200)
+  })
+});
 
 app.post('/email-reply', m.any(), (req, res) => {
   const messageBody = req.body;

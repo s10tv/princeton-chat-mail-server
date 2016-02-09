@@ -3,15 +3,20 @@ import rewire from 'rewire'
 import request from 'supertest'
 
 import MockEmailSender from './mocks/MockEmailSender'
+import MockSlack from './mocks/MockSlack'
+import PULSE_DATA from './data/pulse-data'
 
 const app = rewire('../src/server')
 
 describe('Server', () => {
   let Sender = null
+  let Slack = null
 
   beforeEach(() => {
     Sender =  new MockEmailSender()
+    Slack = new MockSlack()
     app.__set__('Sender', Sender)
+    app.__set__('slackClient', Slack)
   })
 
   it('should handle /email-reply', (done) => {
@@ -45,6 +50,19 @@ describe('Server', () => {
       .expect(200)
       .end(function(err, res) {
         expect(Sender.messageId).to.equal('message-id');
+        done()
+      });
+  });
+
+  it('should handle /mailgun/pulse', (done) => {
+    request('http://localhost:5000')
+      .post('/mailgun/pulse')
+      .send(PULSE_DATA)
+      .expect(200)
+      .end(function(err, res) {
+        expect(Slack.queue.length).to.equal(1)
+        const [msg] = Slack.queue
+        expect(msg).to.equal('fang@taylrapp.com opened our mail (20160209053519.16564.71791@dev.topics.princeton.chat) from San Francisco, CA')
         done()
       });
   });
