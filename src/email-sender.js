@@ -54,7 +54,7 @@ export default class EmailSender {
   async __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
     const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${subject}`;
     const senderUser = await this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
-    const topics = await Topic.find({ _id: topicToPost })
+    const topics = await Topic.find({ _id: { $regex: new RegExp(`^${topicToPost}`, "i") }})
     const [ topic ] = topics;
 
     if (!topic) {
@@ -76,7 +76,8 @@ export default class EmailSender {
         HtmlBody: errorEmailContent,
       };
 
-      return this.mailer.send(errorEmail);
+      await this.mailer.send(errorEmail);
+      return Promise.reject(`Posting to a topicId ${topicToPost} that doesnt exist.`)
     }
     const newPostId = uuid.v4()
     await upsert(Post, { _id: newPostId}, {

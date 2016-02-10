@@ -422,6 +422,14 @@ describe('EmailSender', () => {
         }).save(done);
       })
 
+      it('should tolerate case insensitive addresses', (done) => {
+        POST_INPUT.To = 'COokIes@dev.topics.princeton.chat'
+        new EmailSender(mailer)
+          .handleEmailReply(POST_INPUT)
+          .then(() => done())
+          .catch(err => done(err))
+      })
+
       it('should create a new post', (done) => {
         new EmailSender(mailer)
           .handleEmailReply(POST_INPUT)
@@ -484,23 +492,23 @@ describe('EmailSender', () => {
         it('should send an error email', (done) => {
           new EmailSender(mailer)
             .handleEmailReply(POST_INPUT)
-          .then(() => {
-            return count(Post, {})
-          })
-          .then(postCount => {
-            expect(postCount).to.equal(0);
-            expect(mailer.mailQueue.length).to.equal(1);
-            const [email] = mailer.mailQueue;
+            .then(() => fail('Should throw when sending to invalid topic email'))
+            .catch(() => {
+              return count(Post, {})
+              .then(postCount => {
+                expect(postCount).to.equal(0);
+                expect(mailer.mailQueue.length).to.equal(1);
+                const [email] = mailer.mailQueue;
 
-            expect(email.From).to.equal('Princeton.Chat <notifications@dev.princeton.chat>');
-            expect(email.To).to.equal('nurym@gmail.com');
-            expect(email.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Test subject');
-            expect(email.ReplyTo).to.equal('Princeton.Chat <hello@dev.princeton.chat>');
-            expect(email.HtmlBody).to.exist;
+                expect(email.From).to.equal('Princeton.Chat <notifications@dev.princeton.chat>');
+                expect(email.To).to.equal('nurym@gmail.com');
+                expect(email.Subject).to.equal('[Princeton.Chat] Problem Posting RE: Test subject');
+                expect(email.ReplyTo).to.equal('Princeton.Chat <hello@dev.princeton.chat>');
+                expect(email.HtmlBody).to.exist;
 
-            done()
-          })
-          .catch(err => done(err))
+                done()
+              })
+            })
         })
       })
     })
