@@ -34,7 +34,7 @@ mongoose.connect(secrets.mongo, function(err, res) {
 });
 
 i18n.configure({
-  locales:['princeton', 's10'],
+  locales:['princeton', 's10', 'ped'],
   directory: __dirname + '/locales'
 });
 i18n.setLocale(secrets.system);
