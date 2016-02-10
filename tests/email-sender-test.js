@@ -389,6 +389,17 @@ describe('EmailSender', () => {
       })
     })
 
+    describe('when the sender has different casing for their email', () => {
+      const INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
+      it('should not result in error', (done) => {
+        INPUT.from = 'FAng@taylrapp.com'
+        new EmailSender(mailer)
+          .handleEmailReply(INPUT)
+          .then(() => done())
+          .catch(err => done(err))
+      })
+    })
+
     /**
      * NEW-POST test
      */

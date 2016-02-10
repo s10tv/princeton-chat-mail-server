@@ -294,7 +294,9 @@ export default class EmailSender {
   }
 
   async __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
-    const users = await User.find({ 'emails.address': fromEmail })
+    const users = await User.find({
+      'emails.address': { $regex: new RegExp(`^${fromEmail.toLowerCase()}`, "i") }
+    })
     const [senderUser] = users;
 
     if (!senderUser) {
