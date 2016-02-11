@@ -158,9 +158,6 @@ export default class EmailSender {
       // TODO: Support posts with mutiple topics
       // They Every topic should appear in the cc field and also subject line
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-      // FIXME: For now assume topicId = topic.DisplayName
-      // const [topic] = find(Topic, { _id: topicId })
-      const tag = `${topicId}`
 
       // TODO: What kind of escaping / sanitization do we need to do to topic
       // and other user supplied string here?
@@ -169,7 +166,7 @@ export default class EmailSender {
         To: `${toName} <${email.address}>`.trim(),
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-        Subject: `RE: [${tag}] ${this.post.title}`,
+        Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent,
       };
     })
@@ -211,15 +208,13 @@ export default class EmailSender {
         recipient: user,
       });
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-      // TODO: Fix me, similar issue as above
-      const tag = `${topicId}`
 
       return {
         From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
         To: `${toName} <${email.address}>`.trim(),
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-        Subject: `RE: [${tag}] ${this.post.title}`,
+        Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent,
       };
     })
@@ -277,16 +272,13 @@ export default class EmailSender {
       const toName = this.parseDisplayName(user)
       const hash = this.post._id;
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-      // TODO: same issues as above, fix me
-      // const [topic] = find(Topic, { _id: topicId })
-      const tag = `${topicId}`
 
       return {
         From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
         To: `${toName} <${email.address}>`.trim(),
         CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
-        Subject: `[${tag}] ${this.post.title}`,
+        Subject: `[${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent,
       };
     })
