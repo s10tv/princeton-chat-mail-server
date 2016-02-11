@@ -301,7 +301,7 @@ export default class EmailSender {
     const [senderUser] = users;
 
     if (!senderUser) {
-      const greeting = fromName && fromName.length > 0 ? `Hey ${fromName}<br /><br />,` : 'Hello!';
+      const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},<br /><br />` : 'Hello!';
       const errorEmailContent = `${greeting}
         Seems like your email address <a href='mailto:${fromEmail}'>${fromEmail}</a> was not a registered email on
         Princeton.Chat. Please check your <a href='${secrets.url}/settings'>notification preferences</a>,
