@@ -52,7 +52,7 @@ export default class EmailSender {
   }
 
   async __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
-    const errorEmailSubject = `[Princeton.Chat] Problem Posting RE: ${subject}`;
+    const errorEmailSubject = `[${i18n.__('title')}] Problem Posting RE: ${subject}`;
     const senderUser = await this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
     const topics = await Topic.find({ _id: { $regex: new RegExp(`^${topicToPost}`, "i") }})
     const [ topic ] = topics;
@@ -304,7 +304,7 @@ export default class EmailSender {
       const greeting = fromName && fromName.length > 0 ? `Hey ${fromName},<br /><br />` : 'Hello!';
       const errorEmailContent = `${greeting}
         Seems like your email address <a href='mailto:${fromEmail}'>${fromEmail}</a> was not a registered email on
-        Princeton.Chat. Please check your <a href='${secrets.url}/settings'>notification preferences</a>,
+        ${i18n.__('title')}. Please check your <a href='${secrets.url}/settings'>notification preferences</a>,
         and reply to let us know if you run into any issues.<br /><br /><br />
         --<br />
         Want to <a href='${secrets.url}'>Register</a>?
@@ -404,7 +404,7 @@ export default class EmailSender {
       <p>${content}</p>
       <p style="padding-top: 15px">
         --<br />
-        Reply to this email directly or <a href='${secrets.url}/topics/${topicId}/${post._id}'>view it on Princeton.Chat</a><br />
+        Reply to this email directly or <a href='${secrets.url}/topics/${topicId}/${post._id}'>view it on ${i18n.__('title')}</a><br />
         You can also <a href='${secrets.url}/guest/posts/${post._id}/unfollow?userId=${recipient._id}&hash=${hash}'>Unfollow</a>
           this thread or <a href='${secrets.url}/guest?userId=${recipient._id}&hash=${hash}'>Edit topics I follow</a>.<br />
         To privately reply to the sender, email <a href='mailto:${address}'>${address}</a>
