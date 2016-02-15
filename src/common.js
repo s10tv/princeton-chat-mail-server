@@ -1,5 +1,4 @@
-var mongoose = require('mongoose')
-  , Promise = require('es6-promise').Promise;
+var Promise = require('es6-promise').Promise;
 
 export function INFO(message) {
   if (process.env.DEBUG) {
@@ -77,13 +76,3 @@ export function update(schema, identifier, query) {
   });
 }
 
-export function unicodeEscape(source) {
-    if (source == undefined || source == null) {
-      return source;
-    }
-
-    var r = /\\u([\d\w]{4})/gi;
-    return source.replace(r, function (match, grp) {
-      return String.fromCharCode(parseInt(grp, 16));
-    });
-}

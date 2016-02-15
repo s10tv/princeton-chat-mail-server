@@ -90,7 +90,7 @@ export default class EmailSender {
         userId: senderUser._id
       }],
       createdAt: new Date(),
-      numMsgs: 0,
+      numMsgs: 0
     })
     return this.handleNewPostFromWeb(newPostId)
   }
@@ -106,21 +106,12 @@ export default class EmailSender {
       postId: this.post._id,
       content: content,
       source: 'email',
-      createdAt: new Date(),
+      createdAt: new Date()
     }
     await upsert(Message, { _id: messageId }, messageBody)
     await this.__onNewMessage(messageBody)
 
-    // this user is not already following the post, make the user follow the post.
-    if (this.post.followers.filter(follower => follower.userId == this.senderUser._id).length == 0) {
-      await update(Post, { _id: this.post._id }, { $push: {
-        followers: { userId: this.senderUser._id }
-      }})
-
-      await update(User, { _id: this.senderUser._id }, { $addToSet: {
-        followingPosts: this.post._id
-      }})
-    }
+    this.__followPost(this.senderUser)
 
     INFO(this.usersFollowingPost);
     INFO(this.replyAllRecipients);
@@ -167,7 +158,7 @@ export default class EmailSender {
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
-        HtmlBody: emailContent,
+        HtmlBody: emailContent
       };
     })
 
@@ -194,6 +185,8 @@ export default class EmailSender {
       usersToNotify[user._id] = user;
     });
 
+    this.__followPost(this.messageOwner)
+
     const emailsToSend = Object.keys(usersToNotify).map((userId) => {
       const user = usersToNotify[userId];
       const [ email ] =  user.emails;
@@ -205,7 +198,7 @@ export default class EmailSender {
         content: this.__formatContent(this.message.content),
         post: this.post,
         sender: this.messageOwner,
-        recipient: user,
+        recipient: user
       });
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
@@ -215,7 +208,7 @@ export default class EmailSender {
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
-        HtmlBody: emailContent,
+        HtmlBody: emailContent
       };
     })
 
@@ -265,7 +258,7 @@ export default class EmailSender {
         content: this.__formatContent(this.post.content),
         post: this.post,
         sender: this.postOwner,
-        recipient: user,
+        recipient: user
       });
 
       const fromName = this.parseDisplayName(this.postOwner);
@@ -279,7 +272,7 @@ export default class EmailSender {
         CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `[${i18n.__('title')}] ${this.post.title}`,
-        HtmlBody: emailContent,
+        HtmlBody: emailContent
       };
     })
 
@@ -307,7 +300,7 @@ export default class EmailSender {
         To: fromEmail,
         ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
         Subject: errorEmailSubject,
-        HtmlBody: errorEmailContent,
+        HtmlBody: errorEmailContent
       };
 
       logger.info(errorEmail);
@@ -379,10 +372,23 @@ export default class EmailSender {
     this.usersFollowingTopic = users;
   }
 
+  async __followPost(sender) {
+    // this user is not already following the post, make the user follow the post.
+    if (this.post.followers.filter(follower => follower.userId == sender._id).length == 0) {
+      await update(Post, { _id: this.post._id }, { $push: {
+        followers: { userId: sender._id }
+      }})
+
+      await update(User, { _id: sender._id }, { $addToSet: {
+        followingPosts: this.post._id
+      }})
+    }
+  }
+
   async __onNewMessage(message) {
     await update(Post, { _id: message.postId }, { $set: {
       lastMessageText: message.content,
-      lastMessageId: message._id,
+      lastMessageId: message._id
     }})
   }
 
@@ -409,22 +415,6 @@ export default class EmailSender {
     }
 
     return content.replace(/(?:\r\n|\r|\n)/g, '<br />')
-  }
-
-  __generateHash({ id, user }) {
-    return `${id}_=_=${user._id}`
-  }
-
-  __parseHash(hash) {
-    if (!hash) {
-      return {}
-    }
-
-    const [id, userId] = hash.split('_=_=')
-    return {
-      id,
-      userId,
-    }
   }
 
   parseDisplayName(user) {

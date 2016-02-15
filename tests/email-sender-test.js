@@ -313,6 +313,11 @@ describe('EmailSender', () => {
           const [post] = posts;
           expect(post.lastMessageText).to.equal('i love it')
           expect(post.lastMessageId).to.equal('dianas-message')
+          expect(post.followers.length).to.equal(1)
+          return find(User, {_id: 'dchau'})
+        }).then((users) => {
+          const [dianaUser] = users
+          expect(dianaUser.followingPosts.length).to.equal(1)
           done()
         })
         .catch(err => {
