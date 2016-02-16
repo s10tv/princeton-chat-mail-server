@@ -267,7 +267,7 @@ describe('EmailSender', () => {
         username: 'diana',
         firstName: 'Diana',
         lastName: 'Chau',
-        emails: [{ address: 'diana@gmail.com' }],
+        emails: [{ address: 'diana@yahoo.com' }], // sucky email - does not comply to DMARC
         followingPosts: ['super-bowl'],
         emailPreference: 'all',
       }).save(done)
@@ -300,7 +300,7 @@ describe('EmailSender', () => {
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
 
-          expect(mail.From).to.equal('Diana Chau <diana@gmail.com>');
+          expect(mail.From).to.equal('Diana Chau <notifications@dev.princeton.chat>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');
           expect(mail.CC).to.equal('sports <sports@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Super Bowl <reply+super-bowl@dev.posts.princeton.chat>');

@@ -153,7 +153,7 @@ export default class EmailSender {
       // TODO: What kind of escaping / sanitization do we need to do to topic
       // and other user supplied string here?
       return {
-        From: `${fromName} <${fromEmail}>`.trim(),
+        From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
         To: `${toName} <${email.address}>`.trim(),
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
@@ -201,9 +201,10 @@ export default class EmailSender {
         recipient: user
       });
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+      const fromEmail = this.messageOwner.emails[0].address
 
       return {
-        From: `${fromName} <${this.messageOwner.emails[0].address}>`.trim(),
+        From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
         To: `${toName} <${email.address}>`.trim(),
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
@@ -265,9 +266,10 @@ export default class EmailSender {
       const toName = this.parseDisplayName(user)
       const hash = this.post._id;
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+      const fromEmail = this.postOwner.emails[0].address
 
       return {
-        From: `${fromName} <${this.postOwner.emails[0].address}>`.trim(),
+        From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
         To: `${toName} <${email.address}>`.trim(),
         CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
@@ -297,7 +299,7 @@ export default class EmailSender {
 
       const errorEmail = {
         From: `${i18n.__('title')} <notifications@${secrets.rootMailServer}>`,
-        To: fromEmail,
+        To: this.__getFrom(fromEmail),
         ReplyTo: `${i18n.__('title')} <hello@${secrets.rootMailServer}>`,
         Subject: errorEmailSubject,
         HtmlBody: errorEmailContent
@@ -310,6 +312,18 @@ export default class EmailSender {
     }
 
     return senderUser
+  }
+
+  /**
+   * @return a from address that complies with DMARC standards
+   * (i.e. exclude sucky yahoo.com emails)
+   */
+  __getFrom(email) {
+    if (/@yahoo.com$/.test(email)) {
+      return `notifications@${secrets.rootMailServer}`
+    }
+
+    return email
   }
 
   /**
