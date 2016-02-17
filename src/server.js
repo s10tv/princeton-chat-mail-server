@@ -77,11 +77,19 @@ app.post('/mailgun/pulse', m.any(), (req, res) => {
     res.sendStatus(200)
   }
 
-  let { recipient, event, city, region } = req.body;
+  let { recipient, event } = req.body;
   let mailId = req.body['message-id']
 
-  const message = `${recipient} ${event} our mail (${mailId}) from ${city}, ${region}`
-  return slackClient.pulse(message)
+  const message = `${recipient} ${event} our mail ${ mailId ? `(${mailId})` : ''}`
+  let action = slackClient.pulse.bind(slackClient)
+
+  switch (event) {
+    case 'bounced':
+    case 'dropped':
+      action = slackClient.attention.bind(slackClient)
+  }
+
+  return action(message)
   .then(() => {
     return res.sendStatus(200)
   })

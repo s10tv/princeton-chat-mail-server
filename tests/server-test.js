@@ -5,6 +5,7 @@ import request from 'supertest'
 import MockEmailSender from './mocks/MockEmailSender'
 import MockSlack from './mocks/MockSlack'
 import PULSE_DATA from './data/pulse-data'
+import PULSE_ERROR_DATA from './data/pulse-error-data'
 
 const app = rewire('../src/server')
 
@@ -62,7 +63,21 @@ describe('Server', () => {
       .end(function(err, res) {
         expect(Slack.queue.length).to.equal(1)
         const [msg] = Slack.queue
-        expect(msg).to.equal('fang@taylrapp.com opened our mail (20160209053519.16564.71791@dev.topics.princeton.chat) from San Francisco, CA')
+        expect(msg).to.equal('fang@taylrapp.com opened our mail (20160209053519.16564.71791@dev.topics.princeton.chat)')
+        done()
+      });
+  });
+
+  it('should have special handilng for erroneous /mailgun/pulse', (done) => {
+    request('http://localhost:5000')
+      .post('/mailgun/pulse')
+      .send(PULSE_ERROR_DATA)
+      .expect(200)
+      .end(function(err, res) {
+        expect(Slack.queue.length).to.equal(0)
+        expect(Slack.attention_queue.length).to.equal(1)
+        const [msg] = Slack.attention_queue
+        expect(msg).to.equal('fang@taylrapp.com dropped our mail (20160209053519.16564.71791@dev.topics.princeton.chat)')
         done()
       });
   });
