@@ -19,10 +19,10 @@ export const app = express()
 const m = multer({})
 
 // injectable
-let mailer = new Mailer(secrets.topicMailServer);
-let Sender = new EmailSender(mailer, secrets.topicMailServer, secrets.url);
-let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
 let slackClient = new Slack();
+let mailer = new Mailer(secrets.topicMailServer);
+let Sender = new EmailSender(mailer, slackClient)
+let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
 
 mongoose.Promise = Promise
 mongoose.connect(secrets.mongo, function(err, res) {
