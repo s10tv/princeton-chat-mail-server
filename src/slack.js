@@ -5,6 +5,22 @@ export default class Slack {
     this.slack = require('slack-notify')(secrets.slack.url);
   }
 
+  info(message) {
+    return new Promise((resolve, reject) => {
+      return this.slack.send({
+        channel: secrets.slack.info,
+        icon_emoji: ':notebook:',
+        text: message,
+        username: secrets.system
+      }, (err, res) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve(res)
+      });
+    })
+  }
+
   pulse(message) {
     return new Promise((resolve, reject) => {
       return this.slack.send({

@@ -15,7 +15,7 @@ export default {
   },
   slack: {
     url: process.env.SLACK_URL || 'https://hooks.slack.com/services/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',
-    success: process.env.SLACK_SUCCESS || '#princeton-chat',
+    info: process.env.SLACK_SUCCESS || '#princeton-chat',
     pulse: process.env.SLACK_PULSE || 'princeton-chat-pulse',
     error: process.env.SLACK_ERROR || 'monitoring',
   },

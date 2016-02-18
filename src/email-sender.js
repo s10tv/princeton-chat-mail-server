@@ -17,8 +17,9 @@ import {generateHash} from './auth'
 
 export default class EmailSender {
 
-  constructor(mailer) {
+  constructor(mailer, slack) {
     this.mailer = mailer;
+    this.slack = slack;
   }
 
   /**
@@ -77,6 +78,7 @@ export default class EmailSender {
       };
 
       await this.mailer.send(errorEmail);
+      await this.slack.attention(`${fromEmail} email post to invalid topic ${topicToPost}.`)
       return Promise.reject(`Posting to a topicId ${topicToPost} that doesnt exist.`)
     }
     const newPostId = uuid.v4()
@@ -92,6 +94,7 @@ export default class EmailSender {
       createdAt: new Date(),
       numMsgs: 0
     })
+
     return this.handleNewPostFromWeb(newPostId)
   }
 
@@ -162,7 +165,8 @@ export default class EmailSender {
       };
     })
 
-    return this.mailer.sendBatchEmails(emailsToSend);
+    await this.mailer.sendBatchEmails(emailsToSend);
+    await this.slack.info(`Email message from ${fromName} (${fromEmail}). Post Id: ${postId}`)
   }
 
   /**
@@ -187,11 +191,13 @@ export default class EmailSender {
 
     this.__followPost(this.messageOwner)
 
+    const fromName = this.parseDisplayName(this.messageOwner);
+    const fromEmail = this.messageOwner.emails[0].address
+
     const emailsToSend = Object.keys(usersToNotify).map((userId) => {
       const user = usersToNotify[userId];
       const [ email ] =  user.emails;
 
-      const fromName = this.parseDisplayName(this.messageOwner);
       const toName = this.parseDisplayName(user);
       const hash = this.post._id;
       const emailContent = this.__addFooter({
@@ -201,7 +207,6 @@ export default class EmailSender {
         recipient: user
       });
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-      const fromEmail = this.messageOwner.emails[0].address
 
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
@@ -213,7 +218,8 @@ export default class EmailSender {
       };
     })
 
-    return this.mailer.sendBatchEmails(emailsToSend);
+    await this.mailer.sendBatchEmails(emailsToSend);
+    await this.slack.info(`Web message from ${fromName} (${fromEmail}). Post Id: ${this.post._id}`)
   }
 
   /**
@@ -245,6 +251,9 @@ export default class EmailSender {
     // Don't need to send myself an email.
     delete usersToNotify[this.post.ownerId];
 
+    const fromName = this.parseDisplayName(this.postOwner);
+    const fromEmail = this.postOwner.emails[0].address
+
     // Generate the email content to send
     const emailsToSend = Object.keys(usersToNotify).map((userId) => {
       const user = usersToNotify[userId];
@@ -262,11 +271,9 @@ export default class EmailSender {
         recipient: user
       });
 
-      const fromName = this.parseDisplayName(this.postOwner);
       const toName = this.parseDisplayName(user)
       const hash = this.post._id;
       const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
-      const fromEmail = this.postOwner.emails[0].address
 
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
@@ -278,7 +285,8 @@ export default class EmailSender {
       };
     })
 
-    return this.mailer.sendBatchEmails(emailsToSend);
+    await this.mailer.sendBatchEmails(emailsToSend);
+    await this.slack.info(`New post from ${fromName} (${fromEmail}). Post Id: ${this.post._id}`)
   }
 
   async __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
@@ -308,6 +316,7 @@ export default class EmailSender {
       logger.info(errorEmail);
 
       await this.mailer.send(errorEmail)
+      await this.slack.attention(`${fromEmail} is invalid. Sent error email.`)
       return Promise.reject(`${fromEmail} was not found. Sent error email`)
     }
 

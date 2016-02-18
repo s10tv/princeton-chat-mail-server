@@ -10,6 +10,7 @@ var mongoose = require('mongoose')
 import { find, count, upsert } from '../src/common.js'
 import EmailSender from '../src/email-sender';
 import MockMailer from './mocks/MockMailer';
+import MockSlack from './mocks/MockSlack'
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
 import NO_LINE_BREAK_CONTENT from './data/post-with-no-newline'
@@ -165,7 +166,12 @@ describe('EmailSender', () => {
    * Expect: an email gets sent to Tony.
    */
   describe('handleNewPostFromWeb', () => {
-    const mailer = new MockMailer();
+    let mailer, slack
+
+    beforeEach(() => {
+      mailer = new MockMailer()
+      slack = new MockSlack()
+    })
 
     beforeEach((done) => {
       new Post({
@@ -217,10 +223,12 @@ describe('EmailSender', () => {
       }).save(done)
     });
 
-    it('should attempt to send emails to through mailer', (done) => {
-      new EmailSender(mailer)
+    it('should send emails to through mailer and ping slack', (done) => {
+      new EmailSender(mailer, slack)
         .handleNewPostFromWeb('test-post-two')
         .then(() => {
+          expect(slack.info_queue.length).to.equal(1)
+
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
           const expectedReturn = '';
@@ -249,7 +257,12 @@ describe('EmailSender', () => {
    * Expect: an email gets sent to Tony.
    */
   describe('handleNewMessageFromWeb', () => {
-    const mailer = new MockMailer();
+    let mailer, slack
+
+    beforeEach(() => {
+      mailer = new MockMailer();
+      slack = new MockSlack()
+    })
 
     beforeEach((done) => {
       new User({
@@ -294,7 +307,7 @@ describe('EmailSender', () => {
     })
 
     it('should send emails per message', (done) => {
-      new EmailSender(mailer)
+      new EmailSender(mailer, slack)
         .handleNewMessageFromWeb('dianas-message')
         .then(() => {
           expect(mailer.mailQueue.length).to.equal(1);
@@ -328,10 +341,11 @@ describe('EmailSender', () => {
 
 
   describe('handleEmailReply', () => {
-    let mailer = null;
+    let mailer, slack
 
     beforeEach(() => {
-      mailer = new MockMailer();
+      mailer = new MockMailer()
+      slack = new MockSlack()
     })
 
     beforeEach((done) => {
@@ -367,7 +381,7 @@ describe('EmailSender', () => {
       const INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
       beforeEach((done) => {
         INPUT.from = 'fake-email@gmail.com'
-        new EmailSender(mailer)
+        new EmailSender(mailer, slack)
           .handleEmailReply(INPUT)
           .then(() => fail('should have thrown an error complaining that fake-email was not founds'))
           .catch(err => {
@@ -388,6 +402,8 @@ describe('EmailSender', () => {
           expect(errorMail.ReplyTo).to.equal('Princeton.Chat <hello@dev.princeton.chat>');
           expect(errorMail.HtmlBody.length).to.be.greaterThan(0);
 
+          expect(slack.attention_queue.length).to.equal(1)
+
           done();
         })
         .catch(err => done(err))
@@ -398,7 +414,7 @@ describe('EmailSender', () => {
       const INPUT = JSON.parse(JSON.stringify(INBOUND_MAIL_DATA));
       it('should not result in error', (done) => {
         INPUT.from = 'FAng@taylrapp.com'
-        new EmailSender(mailer)
+        new EmailSender(mailer, slack)
           .handleEmailReply(INPUT)
           .then(() => done())
           .catch(err => done(err))
@@ -429,14 +445,14 @@ describe('EmailSender', () => {
 
       it('should tolerate case insensitive addresses', (done) => {
         POST_INPUT.To = 'COokIes@dev.topics.princeton.chat'
-        new EmailSender(mailer)
+        new EmailSender(mailer, slack)
           .handleEmailReply(POST_INPUT)
           .then(() => done())
           .catch(err => done(err))
       })
 
-      it('should create a new post', (done) => {
-        new EmailSender(mailer)
+      it('should create a new post and ping slack', (done) => {
+        new EmailSender(mailer, slack)
           .handleEmailReply(POST_INPUT)
           .then(() => {
             return find(Post, {})
@@ -453,6 +469,8 @@ describe('EmailSender', () => {
 
             const [ topicId ] = post.topicIds;
             expect(topicId).to.equal('cookies')
+
+            expect(slack.info_queue.length).to.equal(1)
             done()
           })
           .catch(err => done(err))
@@ -474,7 +492,7 @@ describe('EmailSender', () => {
           })
         })
         .then(() => {
-          return new EmailSender(mailer)
+          return new EmailSender(mailer, slack)
             .handleEmailReply(POST_INPUT)
         })
         .then(() => {
@@ -495,7 +513,7 @@ describe('EmailSender', () => {
         })
 
         it('should send an error email', (done) => {
-          new EmailSender(mailer)
+          new EmailSender(mailer, slack)
             .handleEmailReply(POST_INPUT)
             .then(() => fail('Should throw when sending to invalid topic email'))
             .catch(() => {
@@ -511,6 +529,7 @@ describe('EmailSender', () => {
                 expect(email.ReplyTo).to.equal('Princeton.Chat <hello@dev.princeton.chat>');
                 expect(email.HtmlBody).to.exist;
 
+                expect(slack.attention_queue.length).to.equal(1)
                 done()
               })
             })
@@ -577,7 +596,7 @@ describe('EmailSender', () => {
         const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
         TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
 
-        new EmailSender(mailer).handleEmailReply(TO_TOPIC_MS_REPLY_ALL)
+        new EmailSender(mailer, slack).handleEmailReply(TO_TOPIC_MS_REPLY_ALL)
         .then(() => {
           expect(mailer.mailQueue.length).to.equal(0);
           done()
@@ -585,9 +604,11 @@ describe('EmailSender', () => {
         .catch(err => done(err))
       })
 
-      it('should send emails to all post and topic followers', (done) => {
-        new EmailSender(mailer).handleEmailReply(REPLY_ALL_MAIL_DATA)
+      it('should send emails to all post and topic followers and ping slack', (done) => {
+        new EmailSender(mailer, slack).handleEmailReply(REPLY_ALL_MAIL_DATA)
         .then(() => {
+          expect(slack.info_queue.length).to.equal(1)
+
           expect(mailer.mailQueue.length).to.equal(2);
           const [dchaumail, tonyxmail] = mailer.mailQueue;
 
@@ -637,8 +658,10 @@ describe('EmailSender', () => {
      */
     describe('when the sender has an email that is in the system', () => {
       it('should send emails to through mailer', (done) => {
-        new EmailSender(mailer).handleEmailReply(INBOUND_MAIL_DATA)
+        new EmailSender(mailer, slack).handleEmailReply(INBOUND_MAIL_DATA)
         .then(() => {
+          expect(slack.info_queue.length).to.equal(1)
+
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
 
