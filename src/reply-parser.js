@@ -28,6 +28,7 @@ export default class ReplyParser {
     // 3.5) { To: @post, CC: @topic } === (topic server) ignore
 
     // 4) { TO: { personal }, CC: @topic }  === new post notification
+    // else drop
 
     const toPostInfos = toInfos.filter(toInfo => toInfo.domain == secrets.postMailServer);
     const toTopicInfos = toInfos.filter(toInfo => toInfo.domain == secrets.topicMailServer);
@@ -71,7 +72,6 @@ export default class ReplyParser {
 
     // case 3
     else if (toPostInfos.length == 1 && toTopicInfos.length == 0 && ccTopicInfos.length == 1) {
-
       // has to exist, otherwise, shouldnt have gotten delivered.
       const recipientInfo = emailparser.parseOneAddress(emailResponse.recipient);
       const isToTopicMS = recipientInfo ? recipientInfo.domain ==  secrets.topicMailServer : false;
