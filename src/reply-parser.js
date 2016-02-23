@@ -13,8 +13,12 @@ export default class ReplyParser {
       content = emailResponse['body-plain'];
     }
 
-    const toInfos = emailResponse.To ? emailparser.parseAddressList(emailResponse.To) : [];
-    const ccInfos = emailResponse.Cc ? emailparser.parseAddressList(emailResponse.Cc) : [];
+    const toInfos = emailResponse.To
+      ? emailparser.parseAddressList(this.__stripInvalidCharacters(emailResponse.To))
+      : [];
+    const ccInfos = emailResponse.Cc
+      ? emailparser.parseAddressList(this.__stripInvalidCharacters(emailResponse.Cc))
+      : [];
 
     // There are 4 cases here: either
     // 1) { To: @topic } === start a new post via email
@@ -116,5 +120,13 @@ export default class ReplyParser {
       topicsToNotify,
       subject: emailResponse.subject,
     }
+  }
+
+  /**
+   * https://tools.ietf.org/html/rfc5322
+   * page 12
+   */
+  __stripInvalidCharacters(emails) {
+    return emails.replace(/[{()}]/g, '');
   }
 }

@@ -50,6 +50,12 @@ describe('ReplyParser', () => {
     expect(ignoreEmail).to.equal(false)
   })
 
+  it('should strip out invalid characters', () => {
+    const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
+    TO_TOPIC_MS_REPLY_ALL.To = 'Rick Cerf <rcerf@alumni.princeton.edu>, The complete guide to growth class by YesGraph (YC <reply+5e092b8b-a746-4a81-8b37-ad4c83d5e261@posts.princeton.chat>';
+    new ReplyParser().parse(TO_TOPIC_MS_REPLY_ALL);
+  })
+
   it('should parse new post emails correctly', () => {
     const {
       ignoreEmail
