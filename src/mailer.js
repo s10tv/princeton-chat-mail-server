@@ -27,7 +27,11 @@ export default class Mailer {
     }
 
     logger.info(mail)
+    console.log(mail)
 
+    return Promise.resolve(true)
+
+    /*
     return new Promise((resolve, reject) => {
       this.mailgun.messages().send(mail, function (err, body) {
         if (err) {
@@ -36,6 +40,7 @@ export default class Mailer {
         return resolve(body);
       });
     })
+    */
   }
 
   sendBatchEmails(emails) {
