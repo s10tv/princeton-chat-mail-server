@@ -110,9 +110,12 @@ export default class ReplyParser {
       throw new Error('Could not parse from email.')
     }
 
+    const attachments = emailResponse.attachments || []
+
     return {
       ignoreEmail,
       fromName,
+      attachments,
       fromEmail,
       content,
       postId,

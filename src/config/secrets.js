@@ -13,6 +13,11 @@ export default {
   mailgun: {
     apiKey: process.env.MAILGUN_API_KEY || ''
   },
+  azure: {
+    account: process.env.AZURE_ACCOUNT || '',
+    key: process.env.AZURE_KEY || '',
+    container: process.env.AZURE_CONTAINER || 's10tv-dev'
+  },
   slack: {
     url: process.env.SLACK_URL || 'https://hooks.slack.com/services/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',
     info: process.env.SLACK_SUCCESS || '#princeton-chat',

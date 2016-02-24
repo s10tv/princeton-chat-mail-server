@@ -36,6 +36,7 @@ export default class EmailSender {
       topicToPost,
       topicsToNotify,
       subject,
+      attachments,
       content } = new ReplyParser(secrets.topicMailServer).parse(postedEmailInput);
 
     if (ignoreEmail) {
