@@ -231,7 +231,6 @@ describe('EmailSender', () => {
 
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
-          const expectedReturn = '';
 
           expect(mail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
           expect(mail.To).to.equal('<tonyx@gmail.com>');

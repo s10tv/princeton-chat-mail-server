@@ -132,6 +132,9 @@ export default class EmailSender {
       usersToNotify[user._id] = user;
     });
 
+    // They Every topic should appear in the cc field and also subject line
+    const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
+
     const emailsToSend = Object.keys(usersToNotify).map((userId) => {
       const user = usersToNotify[userId];
       const [ email ] =  user.emails;
@@ -150,8 +153,6 @@ export default class EmailSender {
       });
       const toName = this.parseDisplayName(user);
       // TODO: Support posts with mutiple topics
-      // They Every topic should appear in the cc field and also subject line
-      const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
       // TODO: What kind of escaping / sanitization do we need to do to topic
       // and other user supplied string here?
@@ -166,7 +167,8 @@ export default class EmailSender {
     })
 
     await this.mailer.sendBatchEmails(emailsToSend);
-    await this.slack.info(`Email message from ${fromName} (${fromEmail}). Post Id: ${postId}`)
+    await this.slack.info(`Email message from ${fromName} (${fromEmail}). \
+      <${secrets.url}/topics/${topicId}/${this.post._id}|Post>`)
   }
 
   /**
@@ -193,6 +195,7 @@ export default class EmailSender {
 
     const fromName = this.parseDisplayName(this.messageOwner);
     const fromEmail = this.messageOwner.emails[0].address
+    const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
     const emailsToSend = Object.keys(usersToNotify).map((userId) => {
       const user = usersToNotify[userId];
@@ -206,7 +209,6 @@ export default class EmailSender {
         sender: this.messageOwner,
         recipient: user
       });
-      const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
@@ -219,7 +221,8 @@ export default class EmailSender {
     })
 
     await this.mailer.sendBatchEmails(emailsToSend);
-    await this.slack.info(`Web message from ${fromName} (${fromEmail}). Post Id: ${this.post._id}`)
+    await this.slack.info(`Web message from ${fromName} (${fromEmail}). \
+      <${secrets.url}/topics/${topicId}/${this.post._id}|post>`)
   }
 
   /**
@@ -253,6 +256,7 @@ export default class EmailSender {
 
     const fromName = this.parseDisplayName(this.postOwner);
     const fromEmail = this.postOwner.emails[0].address
+    const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
     // Generate the email content to send
     const emailsToSend = Object.keys(usersToNotify).map((userId) => {
@@ -273,7 +277,6 @@ export default class EmailSender {
 
       const toName = this.parseDisplayName(user)
       const hash = this.post._id;
-      const topicId = this.post.topicIds.length > 0 ? this.post.topicIds[0] : 'reply';
 
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
@@ -286,7 +289,8 @@ export default class EmailSender {
     })
 
     await this.mailer.sendBatchEmails(emailsToSend);
-    await this.slack.info(`New post from ${fromName} (${fromEmail}). Post Id: ${this.post._id}`)
+    await this.slack.info(`New post from ${fromName} (${fromEmail}). \
+      <${secrets.url}/topics/${topicId}/${this.post._id}|post>`)
   }
 
   async __findUserFromEmail({ fromEmail, fromName, errorEmailSubject }) {
