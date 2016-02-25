@@ -5,11 +5,11 @@ var mongoose = require('mongoose')
   , Post = require('../src/models/post')
   , Topic = require('../src/models/topic')
   , User = require('../src/models/user')
-  , dbURI = 'mongodb://localhost:27017/test';
+  , dbURI = 'mongodb://localhost:27017/test'
 
-import { find, count, upsert } from '../src/common.js'
-import EmailSender from '../src/email-sender';
-import MockMailer from './mocks/MockMailer';
+import { find, count } from '../src/common.js'
+import EmailSender from '../src/email-sender'
+import MockMailer from './mocks/MockMailer'
 import MockSlack from './mocks/MockSlack'
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
@@ -17,7 +17,6 @@ import NO_LINE_BREAK_CONTENT from './data/post-with-no-newline'
 import secrets from '../src/config/secrets'
 
 describe('EmailSender', () => {
-
   before(function (done) {
     if (mongoose.connection.db) return done();
     mongoose.connect(dbURI, done);
@@ -233,8 +232,7 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
-          expect(mail.To).to.equal('<tonyx@gmail.com>');
-          expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
+          expect(mail.To).to.equal('startups <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Post Title <reply+test-post-two@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('[Princeton.Chat] Post Title');
           expect(mail.HtmlBody).to.contain('hello world');
@@ -313,8 +311,7 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Diana Chau <notifications@dev.princeton.chat>');
-          expect(mail.To).to.equal('<tonyx@gmail.com>');
-          expect(mail.CC).to.equal('sports <sports@dev.topics.princeton.chat>');
+          expect(mail.To).to.equal('sports <sports@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Super Bowl <reply+super-bowl@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('RE: [Princeton.Chat] Super Bowl');
           expect(mail.HtmlBody).to.contain('i love it');
@@ -500,7 +497,7 @@ describe('EmailSender', () => {
 
           // briefly validate that email will be sent. The content of the email will be validated
           // later
-          expect(email.To).to.equal('<ninja@gmail.com>');
+          expect(email.To).to.equal('cookies <cookies@dev.topics.princeton.chat>');
           done();
         })
         .catch(err => done(err));
@@ -612,15 +609,13 @@ describe('EmailSender', () => {
           const [dchaumail, tonyxmail] = mailer.mailQueue;
 
           expect(dchaumail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
-          expect(dchaumail.To).to.equal('<dchau-reply-all@gmail.com>');
-          expect(dchaumail.CC).to.equal('noop <noop@dev.topics.princeton.chat>');
+          expect(dchaumail.To).to.equal('noop <noop@dev.topics.princeton.chat>');
           expect(dchaumail.ReplyTo).to.equal('long id <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
           expect(dchaumail.Subject).to.equal('RE: [Princeton.Chat] long id');
           expect(dchaumail.HtmlBody).to.contain('hi');
 
           expect(tonyxmail.From).to.equal('Qiming Fang <fang@taylrapp.com>');
-          expect(tonyxmail.To).to.equal('<tonyx-reply-all@gmail.com>');
-          expect(tonyxmail.CC).to.equal('noop <noop@dev.topics.princeton.chat>');
+          expect(tonyxmail.To).to.equal('noop <noop@dev.topics.princeton.chat>');
           expect(tonyxmail.ReplyTo).to.equal('long id <reply+d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea@dev.posts.princeton.chat>');
           expect(tonyxmail.Subject).to.equal('RE: [Princeton.Chat] long id');
           expect(tonyxmail.HtmlBody).to.contain('hi');
@@ -665,8 +660,7 @@ describe('EmailSender', () => {
           const [mail] = mailer.mailQueue;
 
           expect(mail.From).to.equal('Postmarkapp Support <nurym@gmail.com>');
-          expect(mail.To).to.equal('<diana@gmail.com>');
-          expect(mail.CC).to.equal('startups <startups@dev.topics.princeton.chat>');
+          expect(mail.To).to.equal('startups <startups@dev.topics.princeton.chat>');
           expect(mail.ReplyTo).to.equal('Post Title <reply+POST_ID@dev.posts.princeton.chat>');
           expect(mail.Subject).to.equal('RE: [Princeton.Chat] Post Title');
           expect(mail.HtmlBody).to.contain('This is the reply text<br />Qiming');
