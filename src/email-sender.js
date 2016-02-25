@@ -77,7 +77,7 @@ export default class EmailSender {
         HtmlBody: errorEmailContent,
       };
 
-      await this.mailer.send(errorEmail)
+      await this.mailer.send(errorEmail);
       await this.slack.attention(`${fromEmail} email post to invalid topic ${topicToPost}.`)
       return Promise.reject(`Posting to a topicId ${topicToPost} that doesnt exist.`)
     }
@@ -158,7 +158,8 @@ export default class EmailSender {
       // and other user supplied string here?
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
-        To: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
+        To: `${toName} <${email.address}>`.trim(),
+        CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent
@@ -211,7 +212,8 @@ export default class EmailSender {
 
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
-        To: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
+        To: `${toName} <${email.address}>`.trim(),
+        CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent
@@ -278,7 +280,8 @@ export default class EmailSender {
 
       return {
         From: `${fromName} <${this.__getFrom(fromEmail)}>`.trim(),
-        To: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
+        To: `${toName} <${email.address}>`.trim(),
+        CC: `${topicId} <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `[${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent
