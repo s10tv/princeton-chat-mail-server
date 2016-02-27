@@ -101,6 +101,11 @@ app.post('/mailgun/pulse', m.any(), (req, res) => {
 app.post('/email-reply', m.any(), (req, res) => {
   const messageBody = req.body;
 
+  if (process.env.DISABLE == 1) {
+    console.log(messageBody);
+    return handleSuccess('Postmark-Message success', res)
+  }
+
   return Sender.handleEmailReply(messageBody)
     .then(() => {
       return handleSuccess('Postmark-Message success', res)

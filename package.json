@@ -1,6 +1,6 @@
 {
   "name": "princeton-chat-ms",
-  "version": "0.1.0",
+  "version": "0.3.2",
   "description": "Mail server for princeton-chat",
   "main": "index.js",
   "scripts": {
