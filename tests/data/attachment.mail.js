@@ -3,7 +3,7 @@ export default {
 	"From": "Qiming Fang <fang@taylrapp.com>",
 	"X-Envelope-From": "<fang@s10.tv>",
 	"X-Google-Dkim-Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed;        d=1e100.net; s=20130820;        h=x-gm-message-state:mime-version:in-reply-to:references:date         :message-id:subject:from:to;        bh=68dwbe7fQbH+H1VWqNbPAKXL6aAf01iGZVJ7b6fQ3tw=;        b=Z8bZvb2sdoLoPNI2rVchWYC5pqbdy3XxzgPWgB73AKLcK0NUPNagwONhvMJMKAr29E         ZP4tdfOyXaaFZcXrFwSs7LfRC8Bv/JomHNrdvzR+jtyHkexy52XvFUGFKwfTDE2tvPy5         /FSEC166c+C+laXQf7bUZW9WiXsG1dpPfgvA+2Lod26inQ8NhjTvyGDqh8BrwfSvQyQe         CjkJVvPFMo3ArtjM+de3u2FNZOixvF4f9uauG2aOTVUn5sYJmmntD1GEL67RSkP5Qw4q         +p85jMnOqBHceASWOFUq1leOKKNpNVWwJSldGbwk/Emwj49Hj/apztKAWfbH1Ljjh/Gk         9wew==",
-	"To": "libra <reply+0b0baf8b-9af0-400d-ac9e-eeb6ca9c3290@dev.posts.princeton.chat>",
+	"To": "libra <reply+POST_ID@dev.posts.princeton.chat>",
 	"Dkim-Signature": "v=1; a=rsa-sha256; c=relaxed/relaxed;        d=taylrapp-com.20150623.gappssmtp.com; s=20150623;        h=mime-version:in-reply-to:references:date:message-id:subject:from:to;        bh=68dwbe7fQbH+H1VWqNbPAKXL6aAf01iGZVJ7b6fQ3tw=;        b=gLt9/jxV9mFssCz04Y0n1huhJI7bVqOJCIXYYaj0XIYEwqSLeYDUEc3W6M5z3w+04w         aGWGKUspyqkLOAjTK4rhpc/2P121PdN2Jqj/BYlq5zZMe5abEzdCwtTAaJWRVDkFHFKf         3sokHeDlH6G7Zp16sPJ//sJg/S/AaHnZHXW1Owkwr0EqVHDZlBmr8Y2vvsB2rxIDNsqq         AscJU1ZeH+Nda852rxppdJHEmeAVHOzOzVtE4RmuOj4waYkDKO1a/pYlmxyJgvKTPIij         6yMpyA+4I9I7+JihwwIzxeC+LW/TppVFTMOzWdvZIybLjPIAbX/J+iuya4Wr+qdr5u1b         m8aA==",
 	"subject": "Re: [Princeton.Chat] libra",
 	"from": "Qiming Fang <fang@taylrapp.com>",

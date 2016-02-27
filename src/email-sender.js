@@ -46,14 +46,22 @@ export default class EmailSender {
 
     if (topicToPost) {
       // Possibly a new post since the email didn't come with a post id.
-      return this.__handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content })
+      return this.__handleNewPostFromEmail({
+        fromEmail, fromName, topicToPost, subject, content, attachments })
     }
 
     // Possibly a reply to an existing post, since the message came witha  post id.
-    return this.__handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify })
+    return this.__handleMessageFromEmail({
+      postId, fromEmail, fromName, content, topicsToNotify, attachments})
   }
 
-  async __handleNewPostFromEmail({ fromEmail, fromName, topicToPost, subject, content }) {
+  async __handleNewPostFromEmail({
+    fromEmail,
+    fromName,
+    topicToPost,
+    subject,
+    content,
+    attachments}) {
     const errorEmailSubject = `[${i18n.__('title')}] Problem Posting RE: ${subject}`;
     const senderUser = await this.__findUserFromEmail({ fromEmail, fromName, errorEmailSubject })
     const topics = await Topic.find({ _id: { $regex: new RegExp(`^${topicToPost}`, "i") }})
@@ -99,7 +107,13 @@ export default class EmailSender {
     return this.handleNewPostFromWeb(newPostId)
   }
 
-  async __handleMessageFromEmail({ postId, fromEmail, fromName, content, topicsToNotify }) {
+  async __handleMessageFromEmail({
+    postId,
+    fromEmail,
+    fromName,
+    content,
+    topicsToNotify,
+    attachments}) {
     await this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
 
     // insert this as a message into our system
@@ -110,7 +124,8 @@ export default class EmailSender {
       postId: this.post._id,
       content: content,
       source: 'email',
-      createdAt: new Date()
+      createdAt: new Date(),
+      attachments
     }
     await upsert(Message, { _id: messageId }, messageBody)
     await this.__onNewMessage(messageBody)

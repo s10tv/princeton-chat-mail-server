@@ -1,3 +1,5 @@
+import AttachmentSchema from './attachment'
+
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema;
 
@@ -7,6 +9,7 @@ var MessageSchema = new Schema({
   postId: String,
   content: String,
   source: String,
+  attachments: { type: [AttachmentSchema], default: []},
   createdAt: { type: Date, required: true, default: new Date() } 
 });
 

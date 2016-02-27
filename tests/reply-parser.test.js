@@ -27,7 +27,7 @@ describe ('ReplyParser', () => {
 
     expect(fromName).to.equal('Qiming Fang')
     expect(fromEmail).to.equal('fang@taylrapp.com')
-    expect(postId).to.equal('0b0baf8b-9af0-400d-ac9e-eeb6ca9c3290')
+    expect(postId).to.equal('POST_ID')
     expect(content).to.equal('cat icon:\r\n\r\n[image: Inline image 1]\r\nᐧ')
     expect(ignoreEmail).to.equal(false)
     expect(attachments).to.deep.equal([{
@@ -47,17 +47,6 @@ describe ('ReplyParser', () => {
 
     expect(ignoreEmail).to.equal(true)
   })
-
-  it('should parse attachment reply correctly', () => {
-    const {
-      fromName, fromEmail, postId, content, ignoreEmail, attachments
-    } = new ReplyParser().parse(ATTACHMENT_MAIL_DATA)
-
-    expect(fromName).to.equal('Qiming Fang')
-    expect(fromEmail).to.equal('fang@taylrapp.com')
-    expect(postId).to.equal('0b0baf8b-9af0-400d-ac9e-eeb6ca9c3290')
-  })
-
 
   it ('should parse reply-all correctly', () => {
     const {

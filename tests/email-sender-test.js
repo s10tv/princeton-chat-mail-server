@@ -14,6 +14,7 @@ import MockSlack from './mocks/MockSlack'
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
 import NO_LINE_BREAK_CONTENT from './data/post-with-no-newline'
+import ATTACHMENT_DATA from './data/attachment.mail'
 import secrets from '../src/config/secrets'
 
 describe('EmailSender', () => {
@@ -703,6 +704,29 @@ describe('EmailSender', () => {
         })
         .catch(err => {
           return done(err);
+        })
+      })
+
+      describe('if there are attachments to the email', () => {
+        it('should save the attachment to the message', (done) => {
+          new EmailSender(mailer, slack)
+          .handleEmailReply(ATTACHMENT_DATA)
+          .then(() => {
+            return find(Message, {})
+          })
+          .then((messages) => {
+            expect(messages.length).to.equal(1)
+            const [message] = messages
+
+            expect(message.attachments.length).to.equal(1)
+            const [attachment] = message.attachments
+
+            expect(attachment.url).to.match(/^https/)
+            expect(attachment.contentType).to.equal('image/png')
+            expect(attachment.name).to.equal('cat-icon.png')
+            done()
+          })
+          .catch(err => done(err))
         })
       })
     })
