@@ -11,7 +11,7 @@ export default class Mailer {
     });
   }
 
-  send({ From, To, CC, ReplyTo, Subject, HtmlBody }) {
+  send({ From, To, CC, ReplyTo, Subject, HtmlBody, attachment }) {
     const mail = {
       to: To,
       from: From,
@@ -24,6 +24,10 @@ export default class Mailer {
     // Sometimes (when sending error emails, there are no CC addresses)
     if (CC) {
       mail.cc = CC;
+    }
+
+    if (attachment) {
+      mail.attachment = attachment
     }
 
     logger.info(mail)

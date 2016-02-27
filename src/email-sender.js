@@ -120,7 +120,11 @@ export default class EmailSender {
     attachments}) {
 
     let copiedAttachments = await this.__copyAttachments(attachments)
-    INFO('copiedAttachments', copiedAttachments)
+
+    let attachment
+    if (copiedAttachments.length > 0) {
+      attachment = copiedAttachments[0]
+    }
 
     await this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
 
@@ -186,7 +190,8 @@ export default class EmailSender {
         CC: `${topicId } <${topicId}@${secrets.topicMailServer}>`,
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
-        HtmlBody: emailContent
+        HtmlBody: emailContent,
+        attachment
       };
     })
 
@@ -481,7 +486,7 @@ export default class EmailSender {
       }))
     } catch (err) {
       INFO('could not copy attachments', attachments, err)
-      return Promise.resolve(attachments)
+      return Promise.resolve([])
     }
   }
 
