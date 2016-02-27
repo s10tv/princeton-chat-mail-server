@@ -11,6 +11,7 @@ export default {
     key: process.env.RAYGUN_APIKEY || ''
   },
   mailgun: {
+    user: 'api',
     apiKey: process.env.MAILGUN_API_KEY || ''
   },
   azure: {

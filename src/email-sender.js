@@ -467,8 +467,8 @@ export default class EmailSender {
   async __copyAttachments(attachments) {
     try {
       return Promise.all(attachments.map((attachment) => {
-        const { url, contentType } = attachment
-        return this.azure.copyFromURL(url, contentType)
+        const { url, contentType, name } = attachment
+        return this.azure.copyFromURL(url, name, contentType)
         .then((remoteUrl) => {
           return Promise.resolve(Object.assign({}, attachment, { url: remoteUrl }))
         })

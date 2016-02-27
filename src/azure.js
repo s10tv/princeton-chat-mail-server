@@ -35,14 +35,14 @@ class FileService {
    * @param source a URL where the source data lies
    * @returns {Promise} that resolves to the file name(s) of the source(s)
    */
-  copyFromURL(source, contentType) {
+  copyFromURL(source, fileName, contentType) {
     let remoteFile = crypto.createHash('sha256').update(source).digest('hex');
 
     return new Promise((resolve, reject) => {
       let writeStream = this.blobService.upload({
         contentType,
         container: secrets.azure.container,
-        remote: remoteFile
+        remote: `${remoteFile}/${fileName}`
       });
 
       writeStream.on('success', file => resolve(this.__getFileURL(file)));
@@ -51,7 +51,10 @@ class FileService {
         reject(err)
       });
 
-      request.get(source).pipe(writeStream);
+      request
+        .get(source)
+        .auth(secrets.mailgun.user, secrets.mailgun.apiKey, false)
+        .pipe(writeStream);
     });
   }
 }
