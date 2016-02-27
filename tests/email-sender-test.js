@@ -11,6 +11,7 @@ import { find, count, upsert } from '../src/common.js'
 import EmailSender from '../src/email-sender';
 import MockMailer from './mocks/MockMailer';
 import MockSlack from './mocks/MockSlack'
+import MockAzure from './mocks/MockAzure'
 import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
 import NO_LINE_BREAK_CONTENT from './data/post-with-no-newline'
@@ -341,7 +342,7 @@ describe('EmailSender', () => {
 
 
   describe('handleEmailReply', () => {
-    let mailer, slack
+    let mailer, slack, azure
 
     beforeEach(() => {
       mailer = new MockMailer()
@@ -708,8 +709,12 @@ describe('EmailSender', () => {
       })
 
       describe('if there are attachments to the email', () => {
+        beforeEach(() => {
+          azure = new MockAzure('http://remote-file/')
+        })
+
         it('should save the attachment to the message', (done) => {
-          new EmailSender(mailer, slack)
+          new EmailSender(mailer, slack, azure)
           .handleEmailReply(ATTACHMENT_DATA)
           .then(() => {
             return find(Message, {})
@@ -721,7 +726,7 @@ describe('EmailSender', () => {
             expect(message.attachments.length).to.equal(1)
             const [attachment] = message.attachments
 
-            expect(attachment.url).to.match(/^https/)
+            expect(attachment.url).to.equal('http://remote-file/')
             expect(attachment.contentType).to.equal('image/png')
             expect(attachment.name).to.equal('cat-icon.png')
             done()

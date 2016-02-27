@@ -17,9 +17,10 @@ import {generateHash} from './auth'
 
 export default class EmailSender {
 
-  constructor(mailer, slack) {
+  constructor(mailer, slack, azure) {
     this.mailer = mailer;
     this.slack = slack;
+    this.azure = azure;
   }
 
   /**
@@ -114,6 +115,9 @@ export default class EmailSender {
     content,
     topicsToNotify,
     attachments}) {
+
+    let copiedAttachments = await this.__copyAttachments(attachments)
+
     await this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
 
     // insert this as a message into our system
@@ -125,7 +129,7 @@ export default class EmailSender {
       content: content,
       source: 'email',
       createdAt: new Date(),
-      attachments
+      attachments: copiedAttachments
     }
     await upsert(Message, { _id: messageId }, messageBody)
     await this.__onNewMessage(messageBody)
@@ -458,6 +462,21 @@ export default class EmailSender {
     }
 
     return content.replace(/(?:\r\n|\r|\n)/g, '<br />')
+  }
+
+  async __copyAttachments(attachments) {
+    try {
+      return Promise.all(attachments.map((attachment) => {
+        const { url, contentType } = attachment
+        return this.azure.copyFromURL(url, contentType)
+        .then((remoteUrl) => {
+          return Promise.resolve(Object.assign({}, attachment, { url: remoteUrl }))
+        })
+      }))
+    } catch (err) {
+      INFO('could not copy attachments', attachments, err)
+      return Promise.resolve(attachments)
+    }
   }
 
   parseDisplayName(user) {

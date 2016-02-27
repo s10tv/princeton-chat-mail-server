@@ -1,6 +1,6 @@
 var Promise = require('es6-promise').Promise;
 
-export function INFO(message) {
+export function INFO(...message) {
   if (process.env.DEBUG) {
     console.log(message);
   }
