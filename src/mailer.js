@@ -11,7 +11,7 @@ export default class Mailer {
     });
   }
 
-  send({ From, To, CC, ReplyTo, Subject, HtmlBody, attachment }) {
+  send({ From, To, CC, ReplyTo, Subject, HtmlBody, attachments }) {
     const mail = {
       to: To,
       from: From,
@@ -26,11 +26,17 @@ export default class Mailer {
       mail.cc = CC;
     }
 
-    if (attachment) {
-      mail.attachment = attachment
+    if (attachments && attachments.length > 0) {
+      mail.attachment = attachments.map(({ url, name, contentType }) => {
+        return new Mailgun.Attachment({
+          data: url,
+          filename: name,
+          contentType
+        });
+      })
     }
 
-    logger.info(mail)
+    logger.info('sending email', mail)
 
     return new Promise((resolve, reject) => {
       this.mailgun.messages().send(mail, function (err, body) {
