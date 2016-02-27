@@ -121,11 +121,6 @@ export default class EmailSender {
 
     let copiedAttachments = await this.__copyAttachments(attachments)
 
-    let attachment
-    if (copiedAttachments.length > 0) {
-      attachment = copiedAttachments[0]
-    }
-
     await this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
 
     // insert this as a message into our system
@@ -191,9 +186,11 @@ export default class EmailSender {
         ReplyTo: `${truncate(this.post.title, 50)} <reply+${hash}@${secrets.postMailServer}>`,
         Subject: `RE: [${i18n.__('title')}] ${this.post.title}`,
         HtmlBody: emailContent,
-        attachment
+        attachments: copiedAttachments
       };
     })
+
+    INFO('emailsToSend', emailsToSend)
 
     await this.mailer.sendBatchEmails(emailsToSend);
     await this.slack.info(`Email message from ${fromName} (${fromEmail}). \
@@ -250,6 +247,8 @@ export default class EmailSender {
         HtmlBody: emailContent
       };
     })
+
+    INFO('emailsToSend:', emailsToSend)
 
     await this.mailer.sendBatchEmails(emailsToSend);
     await this.slack.info(`Web message from ${fromName} (${fromEmail}). \
@@ -318,6 +317,8 @@ export default class EmailSender {
         HtmlBody: emailContent
       };
     })
+
+    INFO('emailsToSend:', emailsToSend)
 
     await this.mailer.sendBatchEmails(emailsToSend);
     await this.slack.info(`New post from ${fromName} (${fromEmail}). \
@@ -480,8 +481,11 @@ export default class EmailSender {
       return Promise.all(attachments.map((attachment) => {
         const { url, contentType, name } = attachment
         return this.azure.copyFromURL(url, name, contentType)
-        .then((remoteUrl) => {
-          return Promise.resolve(Object.assign({}, attachment, { url: remoteUrl }))
+        .then(({ remoteUrl, size }) => {
+          return Promise.resolve(Object.assign({}, attachment, {
+            size,
+            url: remoteUrl
+          }))
         })
       }))
     } catch (err) {

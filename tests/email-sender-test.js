@@ -710,7 +710,7 @@ describe('EmailSender', () => {
 
       describe('if there are attachments to the email', () => {
         beforeEach(() => {
-          azure = new MockAzure('http://remote-file/')
+          azure = new MockAzure({ remoteUrl: 'http://remote-file/', size: 140 })
         })
 
         it('should save the attachment to the message', (done) => {
@@ -729,6 +729,7 @@ describe('EmailSender', () => {
             expect(attachment.url).to.equal('http://remote-file/')
             expect(attachment.contentType).to.equal('image/png')
             expect(attachment.name).to.equal('cat-icon.png')
+            expect(attachment.size).to.equal(140)
             done()
           })
           .catch(err => done(err))

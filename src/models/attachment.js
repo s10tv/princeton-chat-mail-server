@@ -10,5 +10,8 @@ export default new Schema({
   },
   url: String,
   contentType: String,
-  name: String
+  name: String,
+
+  // private
+  size: Number
 })

@@ -3,13 +3,13 @@ import winston from 'winston'
 require('winston-logstash');
 
 const mockLogger = {
-  info: (m) => {
+  info: (...m) => {
     if (process.env.DEBUG === 1) {
       console.log(m)
     }
   },
 
-  error: (m) => {
+  error: (...m) => {
     if (process.env.DEBUG === 1) {
       console.log(m)
     }

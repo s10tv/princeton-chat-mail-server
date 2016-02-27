@@ -1,13 +1,15 @@
 import Mailgun from 'mailgun-js'
+import request from 'request'
 import secrets from './config/secrets'
 import logger from './logger'
+import { INFO } from './common'
 
 export default class Mailer {
 
   constructor(mailserver) {
     this.mailgun = Mailgun({
       apiKey: secrets.mailgun.apiKey,
-      domain: mailserver,
+      domain: mailserver
     });
   }
 
@@ -18,7 +20,7 @@ export default class Mailer {
       'h:Reply-To': ReplyTo,
       'h:In-Reply-To': ReplyTo,
       subject: Subject,
-      html: HtmlBody,
+      html: HtmlBody
     };
 
     // Sometimes (when sending error emails, there are no CC addresses)
@@ -27,16 +29,8 @@ export default class Mailer {
     }
 
     if (attachments && attachments.length > 0) {
-      mail.attachment = attachments.map(({ url, name, contentType }) => {
-        return new Mailgun.Attachment({
-          data: url,
-          filename: name,
-          contentType
-        });
-      })
+      mail.attachment = attachments.map(({ url }) => request(url))
     }
-
-    logger.info('sending email', mail)
 
     return new Promise((resolve, reject) => {
       this.mailgun.messages().send(mail, function (err, body) {

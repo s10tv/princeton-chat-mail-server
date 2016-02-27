@@ -45,7 +45,12 @@ export default class Azure {
         remote: `${remoteFile}/${fileName}`
       });
 
-      writeStream.on('success', file => resolve(this.__getFileURL(file)));
+      writeStream.on('success', file => {
+        return resolve(Object.assign({}, {
+          remoteUrl: this.__getFileURL(file),
+          size: file.size
+        }))
+      });
       writeStream.on('error', err => {
         console.trace(err);
         reject(err)

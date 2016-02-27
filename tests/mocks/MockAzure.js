@@ -1,9 +1,9 @@
 export default class MockAzure {
-  constructor(file) {
-    this.returnFile = file
+  constructor(options = { remoteUrl: 'http://file', size: 187}) {
+    this.options = options
   }
 
   copyFromURL() {
-    return Promise.resolve(this.returnFile)
+    return Promise.resolve(this.options)
   }
 }
