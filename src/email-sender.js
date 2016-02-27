@@ -29,6 +29,9 @@ export default class EmailSender {
   async handleEmailReply(postedEmailInput) {
     INFO(postedEmailInput);
 
+    const info = new ReplyParser(secrets.topicMailServer).parse(postedEmailInput);
+    INFO(info)
+
     const {
       ignoreEmail,
       fromName,
@@ -38,7 +41,7 @@ export default class EmailSender {
       topicsToNotify,
       subject,
       attachments,
-      content } = new ReplyParser(secrets.topicMailServer).parse(postedEmailInput);
+      content } = info
 
     if (ignoreEmail) {
       // drop this email because it does not need to be handled.
@@ -117,6 +120,7 @@ export default class EmailSender {
     attachments}) {
 
     let copiedAttachments = await this.__copyAttachments(attachments)
+    INFO('copiedAttachments', copiedAttachments)
 
     await this.__getPostInfoFromPostmark({ postId, fromEmail, fromName, topicsToNotify })
 
@@ -210,6 +214,8 @@ export default class EmailSender {
     }).forEach((user) => {
       usersToNotify[user._id] = user;
     });
+
+    INFO(usersToNotify)
 
     this.__followPost(this.messageOwner)
 

@@ -21,16 +21,17 @@ class Logger {
     if (process.env.ENV === 'dev' || process.env.ENV === undefined) {
       this.logger = mockLogger
     } else {
-      this.logger = new (winston.Logger)({
-        transports: [
-          new (winston.transports.Logstash)({
-            port: 10514,
-            host: 'api.logmatic.io',
-            meta: { logmaticKey:'nI5Oe5h-Qf6uT4LBFh8YoQ' },
-            node_name: 'dev',
-          })
-        ]
-      })
+      this.logger = mockLogger
+      //this.logger = new (winston.Logger)({
+      //  transports: [
+      //    new (winston.transports.Logstash)({
+      //      port: 10514,
+      //      host: 'api.logmatic.io',
+      //      meta: { logmaticKey:'nI5Oe5h-Qf6uT4LBFh8YoQ' },
+      //      node_name: 'dev',
+      //    })
+      //  ]
+      //})
     }
   }
 

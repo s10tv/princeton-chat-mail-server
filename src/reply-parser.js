@@ -139,7 +139,6 @@ export default class ReplyParser {
     return {
       ignoreEmail,
       fromName,
-      attachments,
       fromEmail,
       content,
       postId,

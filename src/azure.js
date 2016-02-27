@@ -2,12 +2,12 @@ import crypto from 'crypto'
 import pkgcloud from 'pkgcloud'
 import {Promise} from 'es6-promise'
 import request from 'request'
-import secrets from '../config/secrets'
+import secrets from './config/secrets'
 
 /**
  * In charge of uploading files to a 3p content host.
  */
-class FileService {
+export default class Azure {
 
   constructor() {
     this.blobService = pkgcloud.storage.createClient({
@@ -58,5 +58,3 @@ class FileService {
     });
   }
 }
-
-export default FileService
