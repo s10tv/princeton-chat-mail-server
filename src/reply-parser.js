@@ -110,7 +110,31 @@ export default class ReplyParser {
       throw new Error('Could not parse from email.')
     }
 
-    const attachments = emailResponse.attachments || []
+    let parseAttachments = (attachments) => {
+      if (attachments) {
+        if (typeof attachments === 'string') {
+          attachments = JSON.parse(attachments)
+        }
+
+        return attachments.map((attachment) => {
+          if (attachment.url && attachment['content-type']) {
+            const url = attachment.url
+            const contentType = attachment['content-type']
+            const name = attachment.name
+
+            return {
+              url,
+              contentType,
+              name
+            }
+          }
+        })
+      }
+
+      return []
+    }
+
+    const attachments = parseAttachments(emailResponse.attachments)
 
     return {
       ignoreEmail,
@@ -121,6 +145,7 @@ export default class ReplyParser {
       postId,
       topicToPost,
       topicsToNotify,
+      attachments,
       subject: emailResponse.subject,
     }
   }

@@ -4,7 +4,7 @@ import INBOUND_MAIL_DATA from './data/inbound.mail.js'
 import REPLY_ALL_MAIL_DATA from './data/reply-all.mail.js'
 import NEW_POST_MAIL_DATA from './data/new.post.mail.js'
 import ERROR_MULTIPLE_TO_DATA from './data/error.multiple.to.mail.js'
-import ATTACHMENTS_DATA from './data/attachments.mail.js'
+import ATTACHMENT_MAIL_DATA from './data/attachment.mail.js'
 
 describe ('ReplyParser', () => {
 
@@ -20,6 +20,23 @@ describe ('ReplyParser', () => {
     expect(ignoreEmail).to.equal(false);
   })
 
+  it('should parse attachment reply correctly', () => {
+    const {
+      fromName, fromEmail, postId, content, ignoreEmail, attachments
+    } = new ReplyParser().parse(ATTACHMENT_MAIL_DATA)
+
+    expect(fromName).to.equal('Qiming Fang')
+    expect(fromEmail).to.equal('fang@taylrapp.com')
+    expect(postId).to.equal('0b0baf8b-9af0-400d-ac9e-eeb6ca9c3290')
+    expect(content).to.equal('cat icon:\r\n\r\n[image: Inline image 1]\r\nᐧ')
+    expect(ignoreEmail).to.equal(false)
+    expect(attachments).to.deep.equal([{
+      url: 'https://api.mailgun.net/v2/domains/dev.posts.princeton.chat/messages/WyJhOWUxYTFjN2UzIiwgWyJiZTc3YTBhMC0wNWZmLTQ4M2YtODhhOS1kNGExMTQ4N2I2NGYiXSwgIm1haWxndW4iLCAib2RpbiJd/attachments/0',
+      contentType: 'image/png',
+      name: 'cat-icon.png'
+    }])
+  })
+
   it ('should ignore reply-all emails delivered to topic server', () => {
     const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
     TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
@@ -30,6 +47,17 @@ describe ('ReplyParser', () => {
 
     expect(ignoreEmail).to.equal(true)
   })
+
+  it('should parse attachment reply correctly', () => {
+    const {
+      fromName, fromEmail, postId, content, ignoreEmail, attachments
+    } = new ReplyParser().parse(ATTACHMENT_MAIL_DATA)
+
+    expect(fromName).to.equal('Qiming Fang')
+    expect(fromEmail).to.equal('fang@taylrapp.com')
+    expect(postId).to.equal('0b0baf8b-9af0-400d-ac9e-eeb6ca9c3290')
+  })
+
 
   it ('should parse reply-all correctly', () => {
     const {
@@ -66,16 +94,6 @@ describe ('ReplyParser', () => {
       ignoreEmail
     } = new ReplyParser().parse(NEW_POST_MAIL_DATA);
     expect(ignoreEmail).to.equal(true)
-  })
-
-  it ('should parse attachments correctly', () => {
-    const {
-      attachments
-    } = new ReplyParser().parse(ATTACHMENTS_DATA)
-    expect(attachments.length).to.equal(1)
-
-    const [attachment] = attachments
-    expect(attachment.url).to.match(/^https/)
   })
 
   it ('should throw error if there is a @topic and @post in the TO field', () => {
