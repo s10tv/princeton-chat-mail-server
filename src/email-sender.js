@@ -29,7 +29,7 @@ export default class EmailSender {
   async handleEmailReply(postedEmailInput) {
     INFO(postedEmailInput);
 
-    const info = new ReplyParser(secrets.topicMailServer).parse(postedEmailInput);
+    const info = new ReplyParser().parse(postedEmailInput);
     INFO(info)
 
     const {
