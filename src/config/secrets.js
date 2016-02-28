@@ -1,3 +1,7 @@
+const validTopicMailServers = process.env.VALID_TOPIC_MAIL_SERVERS
+  ? JSON.parse(process.env.VALID_TOPIC_MAIL_SERVERS)
+  : []
+
 export default {
   env: process.env.ENV || 'dev',
 
@@ -28,4 +32,14 @@ export default {
   rootMailServer: process.env.ROOT_MAIL_SERVER || 'dev.princeton.chat',
   topicMailServer: process.env.TOPIC_MAIL_SERVER || 'dev.topics.princeton.chat',
   postMailServer: process.env.POST_MAIL_SERVER || 'dev.posts.princeton.chat',
+
+  // We used to send emails out from @topics.princeton.chat, but have since
+  // changed it to @channels. This variable dictates any domain we consider equivalent
+  // to a topic mail server
+  validTopicMailServers: process.env.VALID_TOPIC_MAIL_SERVERS
+    ? JSON.parse(process.env.VALID_TOPIC_MAIL_SERVERS)
+    : [
+      'dev.topics.princeton.chat',
+      'dev.channels.princeton.chat'
+    ]
 }

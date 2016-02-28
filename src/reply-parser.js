@@ -27,12 +27,19 @@ export default class ReplyParser {
     // 3) { To: @post, CC: @topic } === (post server) reply all to a post
     // 3.5) { To: @post, CC: @topic } === (topic server) ignore
 
-    // 4) { TO: { personal }, CC: @topic }  === new post notification
+    // 4) { TO: { personal }, CC: @topic }  === new post notification.
+    //    (ignore - this email is intended for the {persona}. We just get it by
+    //     accident because we are also CCd)
+
     // else drop
 
     const toPostInfos = toInfos.filter(toInfo => toInfo.domain == secrets.postMailServer);
-    const toTopicInfos = toInfos.filter(toInfo => toInfo.domain == secrets.topicMailServer);
-    const ccTopicInfos = ccInfos.filter(ccInfo => ccInfo.domain == secrets.topicMailServer);
+    const toTopicInfos = toInfos.filter(toInfo => (
+      toInfo.domain && secrets.validTopicMailServers.indexOf(toInfo.domain) >= 0
+    ))
+    const ccTopicInfos = ccInfos.filter(ccInfo => (
+      ccInfo.domain && secrets.validTopicMailServers.indexOf(ccInfo.domain) >= 0
+    ))
 
     let parsePostId = (postInfo) => {
       if (postInfo && postInfo.local) {
@@ -72,10 +79,12 @@ export default class ReplyParser {
 
     // case 3
     else if (toPostInfos.length == 1 && toTopicInfos.length == 0 && ccTopicInfos.length == 1) {
-      // has to exist, otherwise, shouldnt have gotten delivered.
-      const recipientInfo = emailparser.parseOneAddress(emailResponse.recipient);
-      const isToTopicMS = recipientInfo ? recipientInfo.domain ==  secrets.topicMailServer : false;
-      const isToPostMS = recipientInfo ? recipientInfo.domain ==  secrets.postMailServer : false;
+      // has to exist, otherwise, shouldn't have gotten delivered.
+      const recipientInfo = emailparser.parseOneAddress(emailResponse.recipient)
+      const isToTopicMS = recipientInfo
+        ? secrets.validTopicMailServers.indexOf(recipientInfo.domain) >= 0
+        : false
+      const isToPostMS = recipientInfo ? recipientInfo.domain ==  secrets.postMailServer : false
 
       if (isToPostMS) {
         postInfo = toPostInfos[0]

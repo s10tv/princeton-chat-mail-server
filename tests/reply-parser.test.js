@@ -37,36 +37,73 @@ describe ('ReplyParser', () => {
     }])
   })
 
-  it ('should ignore reply-all emails delivered to topic server', () => {
-    const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
-    TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
+  describe('reply-all emails delivered to the topic server', () => {
+    describe('from @topics', () => {
+      it ('should ignore emails', () => {
+        const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
+        TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.topics.princeton.chat';
 
-    const {
-      ignoreEmail,
-    } = new ReplyParser().parse(TO_TOPIC_MS_REPLY_ALL);
+        const {
+          ignoreEmail,
+        } = new ReplyParser().parse(TO_TOPIC_MS_REPLY_ALL);
 
-    expect(ignoreEmail).to.equal(true)
+        expect(ignoreEmail).to.equal(true)
+      })
+    })
+
+    describe('from @channels', () => {
+      it ('should ignore emails', () => {
+        const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
+        TO_TOPIC_MS_REPLY_ALL.recipient = 'noop@dev.channels.princeton.chat';
+
+        const {
+          ignoreEmail,
+        } = new ReplyParser().parse(TO_TOPIC_MS_REPLY_ALL);
+
+        expect(ignoreEmail).to.equal(true)
+      })
+    })
   })
 
-  it ('should parse reply-all correctly', () => {
-    const {
-      ignoreEmail,
-      fromName,
-      fromEmail,
-      postId,
-      topicToPost,
-      topicsToNotify,
-      content,
-    } = new ReplyParser().parse(REPLY_ALL_MAIL_DATA);
+  describe('reply-all emails delivered to the post server', () => {
 
-    expect(fromName).to.equal('Qiming Fang')
-    expect(fromEmail).to.equal('fang@taylrapp.com')
-    expect(postId).to.equal('d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea')
-    expect(topicToPost).not.to.exist;
-    expect(topicsToNotify).to.deep.equal(['noop'])
-    expect(content).to.equal('hi')
-    expect(ignoreEmail).to.equal(false)
+    const validate = (result) => {
+      const {
+        ignoreEmail,
+        fromName,
+        fromEmail,
+        postId,
+        topicToPost,
+        topicsToNotify,
+        content
+      } = result
+
+      expect(fromName).to.equal('Qiming Fang')
+      expect(fromEmail).to.equal('fang@taylrapp.com')
+      expect(postId).to.equal('d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea')
+      expect(topicToPost).not.to.exist;
+      expect(topicsToNotify).to.deep.equal(['noop'])
+      expect(content).to.equal('hi')
+      expect(ignoreEmail).to.equal(false)
+    }
+
+    describe('from @topics', () => {
+      it ('should parse reply-all correctly', () => {
+        const result = new ReplyParser().parse(REPLY_ALL_MAIL_DATA);
+        validate(result)
+      })
+    })
+
+    describe('from @channels', () => {
+      it ('should parse reply-all correctly', () => {
+        const REPLY_ALL_MAIL_DATA_CC_CHANNELS = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
+        REPLY_ALL_MAIL_DATA_CC_CHANNELS.Cc = 'noop@dev.channels.princeton.chat'
+        const result = new ReplyParser().parse(REPLY_ALL_MAIL_DATA_CC_CHANNELS);
+        validate(result)
+      })
+    })
   })
+
 
   it ('should strip out invalid characters', () => {
     const TO_TOPIC_MS_REPLY_ALL = JSON.parse(JSON.stringify(REPLY_ALL_MAIL_DATA))
