@@ -11,25 +11,17 @@ export class MockNotifier {
     this.postsToNotify = []
   }
 
-  postNotify(postId) {
-    this.postsToNotify.push(postId)
+  postNotify(options) {
+    this.postsToNotify.push(options)
     return Promise.resolve(true)
   }
 }
 
 export default class Notifier {
-  async postNotify(postId) {
-    const posts = await find(Post, {_id: postId})
-
-    if (posts.length !== 1) {
-      throw new Error(`Did not find 1 post with id=${postId}. Found ${posts.length}`)
-    }
-
-    const [post] = posts
-
+  async postNotify({postId, excludeUsers = []}) {
     const users = await find(User, { followingPosts: postId })
     return Promise.all(users
-      .filter((user) => user._id !== post.ownerId)
+      .filter((user) => excludeUsers.indexOf(user._id) < 0)
       .map((user) => {
         const notificationId = uuid.v4()
         return upsert(Notification, { _id: notificationId}, {

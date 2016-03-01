@@ -30,14 +30,6 @@ describe('Notifier', () => {
   beforeEach((done) => {
     new Post({
       _id: 'im-awesome',
-      ownerId: 'diana'
-    }).save(done)
-  })
-
-  beforeEach((done) => {
-    new User({
-      _id: 'diana',
-      followingPosts: ['im-awesome']
     }).save(done)
   })
 
@@ -61,8 +53,15 @@ describe('Notifier', () => {
     }).save(done)
   })
 
+  const verifyNotification = (notification) => {
+    expect(notification).to.exist
+    expect(notification.postId).to.equal('im-awesome')
+    expect(notification.createdAt).to.exist
+    expect(notification.status).to.equal('active')
+  }
+
   it ('should upsert a notification for each user that follows the post', (done) => {
-    new Notifier().postNotify('im-awesome')
+    new Notifier().postNotify({ postId: 'im-awesome' })
     .then(() => {
       return find(Notification, {})
     })
@@ -70,18 +69,25 @@ describe('Notifier', () => {
       expect(notifications.length).to.equal(2)
       const byId = _.indexBy(notifications, 'ownerId')
 
-      const verifyNotification = (notification) => {
-        expect(notification).to.exist
-        expect(notification.postId).to.equal('im-awesome')
-        expect(notification.createdAt).to.exist
-        expect(notification.status).to.equal('active')
-      }
-
       verifyNotification(byId.tony)
       verifyNotification(byId.qiming)
 
       done()
     })
     .catch(err => done(err))
+  })
+
+  it('should exclude users in excludeUsers', (done) => {
+    new Notifier().postNotify({ postId: 'im-awesome', excludeUsers: ['qiming'] })
+      .then(() => {
+        return find(Notification, {})
+      })
+      .then((notifications) => {
+        expect(notifications.length).to.equal(1)
+        const byId = _.indexBy(notifications, 'ownerId')
+        verifyNotification(byId.tony)
+        done()
+      })
+      .catch(err => done(err))
   })
 })

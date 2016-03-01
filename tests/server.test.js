@@ -66,7 +66,10 @@ describe('Server', () => {
       .send({ postId: 'post-id' })
       .expect(200)
       .end(function(err, res) {
-        expect(NotificationSender.postsToNotify).to.deep.equal(['post-id']);
+        expect(NotificationSender.postsToNotify).to.deep.equal([{
+          postId: 'post-id',
+          excludeUsers: []
+        }]);
         done()
       });
   });
