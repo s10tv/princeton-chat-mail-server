@@ -29,7 +29,15 @@ describe('Notifier', () => {
 
   beforeEach((done) => {
     new Post({
-      _id: 'im-awesome'
+      _id: 'im-awesome',
+      ownerId: 'diana'
+    }).save(done)
+  })
+
+  beforeEach((done) => {
+    new User({
+      _id: 'diana',
+      followingPosts: ['im-awesome']
     }).save(done)
   })
 
