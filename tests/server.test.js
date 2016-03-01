@@ -4,6 +4,7 @@ import request from 'supertest'
 
 import MockEmailSender from './mocks/MockEmailSender'
 import MockSlack from './mocks/MockSlack'
+import {MockNotifier} from '../src/notifier'
 import PULSE_DATA from './data/pulse-data'
 import PULSE_ERROR_DATA from './data/pulse-error-data'
 
@@ -12,12 +13,16 @@ const app = rewire('../src/server')
 describe('Server', () => {
   let Sender = null
   let Slack = null
+  let NotificationSender = null
 
   beforeEach(() => {
     Sender =  new MockEmailSender()
     Slack = new MockSlack()
+    NotificationSender = new MockNotifier()
+
     app.__set__('Sender', Sender)
     app.__set__('slackClient', Slack)
+    app.__set__('NotificationSender', NotificationSender)
   })
 
   it('should handle /email-reply', (done) => {
@@ -51,6 +56,17 @@ describe('Server', () => {
       .expect(200)
       .end(function(err, res) {
         expect(Sender.messageId).to.equal('message-id');
+        done()
+      });
+  });
+
+  it('should handle /post/notify-users', (done) => {
+    request('http://localhost:5000')
+      .post('/post/notify-users')
+      .send({ postId: 'post-id' })
+      .expect(200)
+      .end(function(err, res) {
+        expect(NotificationSender.postsToNotify).to.deep.equal(['post-id']);
         done()
       });
   });

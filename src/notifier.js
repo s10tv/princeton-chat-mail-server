@@ -13,6 +13,7 @@ export class MockNotifier {
 
   postNotify(postId) {
     this.postsToNotify.push(postId)
+    return Promise.resolve(true)
   }
 }
 
