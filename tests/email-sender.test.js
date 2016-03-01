@@ -31,7 +31,7 @@ describe('EmailSender', () => {
 
   beforeEach((done) => {
     Topic.remove({}, done)
-    });
+  });
 
   beforeEach((done) => {
     Post.remove({}, done)

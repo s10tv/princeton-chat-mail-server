@@ -7,6 +7,9 @@ var NotificationSchema = new Schema({
 
   // Notifications from posts.
   postId: String,
+
+  status: String,
+
   createdAt: { type: Date, required: true, default: new Date() }
 });
 

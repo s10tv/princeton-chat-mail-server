@@ -20,8 +20,9 @@ export default class Notifier {
   async postNotify(postId) {
     const users = await find(User, { followingPosts: postId })
     return Promise.all(users.map((user) => {
-      return upsert(Notification, {
-        _id: uuid.v4(),
+      const notificationId = uuid.v4()
+      return upsert(Notification, { _id: notificationId}, {
+        _id: notificationId,
         postId,
         status: 'active',
         ownerId: user._id,

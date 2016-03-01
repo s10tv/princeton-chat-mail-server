@@ -41,6 +41,7 @@
     "slack-notify": "^0.1.6",
     "supertest": "^1.1.0",
     "truncate": "^2.0.0",
+    "underscore": "^1.8.3",
     "uuid": "^2.0.1",
     "winston": "^2.1.1",
     "winston-logstash": "^0.2.11"
