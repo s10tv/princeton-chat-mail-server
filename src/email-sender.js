@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import truncate from 'truncate'
 import { Promise } from 'es6-promise'
 import i18n from 'i18n'
+import request from 'request'
 
 import Topic from './models/topic'
 import Post from './models/post'
@@ -191,8 +192,9 @@ export default class EmailSender {
     })
 
     INFO('emailsToSend', emailsToSend)
-
     await this.mailer.sendBatchEmails(emailsToSend);
+
+    await this.__notifyPost(this.post._id)
     await this.slack.info(`Email message from ${fromName} (${fromEmail}). \
       <${secrets.url}/topics/${topicId}/${this.post._id}|Post>`)
   }
@@ -249,8 +251,9 @@ export default class EmailSender {
     })
 
     INFO('emailsToSend:', emailsToSend)
-
     await this.mailer.sendBatchEmails(emailsToSend);
+
+    await this.__notifyPost(this.post._id)
     await this.slack.info(`Web message from ${fromName} (${fromEmail}). \
       <${secrets.url}/topics/${topicId}/${this.post._id}|post>`)
   }
@@ -492,6 +495,20 @@ export default class EmailSender {
       INFO('could not copy attachments', attachments, err)
       return Promise.resolve([])
     }
+  }
+
+  __notifyPost(postId) {
+    return new Promise((resolve, reject) => {
+      request({
+        url: secrets.notificationsUrl,
+        method: 'POST',
+        json: true,
+        body: {postId}
+      }, (err, res) => {
+        if (err) { return reject(err) }
+        return resolve(res)
+      })
+    })
   }
 
   parseDisplayName(user) {

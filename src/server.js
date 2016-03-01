@@ -11,6 +11,7 @@ import logger from './logger'
 import secrets from './config/secrets'
 import { INFO } from './common'
 import EmailSender from './email-sender'
+import Notifier from './notifier'
 import Slack from './slack'
 import Azure from './azure'
 import Mailer from './mailer'
@@ -23,7 +24,8 @@ const m = multer({})
 let slackClient = new Slack();
 let mailer = new Mailer(secrets.topicMailServer);
 let azure = new Azure()
-let Sender = new EmailSender(mailer, slackClient, azure)
+let NotificationSender = new Notifier()
+let Sender = new EmailSender(mailer, slackClient, azure, NotificationSender)
 let raygunClient = new raygun.Client().init({ apiKey: secrets.raygun.key });
 
 mongoose.Promise = Promise
@@ -152,6 +154,22 @@ app.post('/web-message', (req, res) => {
     .catch(err => {
       return handleError(err, res);
     })
+})
+
+app.post('/post/notify-users', (req, res) => {
+  const postId = req.body.postId;
+  if (!postId) {
+    let error = new Error('[post/notify-users] postId is not found in the request');
+    return handleError(error, res)
+  }
+
+  return NotificationSender.postNotify(postId)
+  .then(() => {
+    return handleSuccess(`Notified users of postId=${postId}`, res)
+  })
+  .catch(err => {
+    return handleError(err, res);
+  })
 })
 
 app.use(raygunClient.expressHandler);

@@ -5,6 +5,9 @@ const validTopicMailServers = process.env.VALID_TOPIC_MAIL_SERVERS
 export default {
   env: process.env.ENV || 'dev',
 
+  // URL to hit to trigger notifications
+  notificationsUrl: process.env.NOTIFICATIONS_URL || '/',
+
   // for which audience (will control localization settings) is this for?
   // [ s10, princeton, classicaleffect ]
   system: process.env.AUDIENCE || 'princeton',
