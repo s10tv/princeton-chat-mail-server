@@ -320,7 +320,10 @@ describe('EmailSender', () => {
       emailSender
         .handleNewMessageFromWeb('dianas-message')
         .then(() => {
-          expect(emailSender.__notifyPost).to.have.been.calledWith('super-bowl')
+          expect(emailSender.__notifyPost).to.have.been.calledWith({
+            postId: 'super-bowl',
+            excludeUsers: ['dchau']
+          })
 
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
@@ -623,7 +626,10 @@ describe('EmailSender', () => {
         emailSender.handleEmailReply(REPLY_ALL_MAIL_DATA)
         .then(() => {
           expect(slack.info_queue.length).to.equal(1)
-          expect(emailSender.__notifyPost).to.have.been.calledWith('d2cba2d8-4206-48cd-9fd4-3d8dca31a8ea')
+          expect(emailSender.__notifyPost).to.have.been.calledWith({
+            postId: 'd2cba2d8-4206-48cd-9fd4-3d8dca31a8ea',
+            excludeUsers: ['qiming']
+          })
 
           expect(mailer.mailQueue.length).to.equal(2);
           const [dchaumail, tonyxmail] = mailer.mailQueue;
@@ -677,7 +683,10 @@ describe('EmailSender', () => {
         emailSender.handleEmailReply(INBOUND_MAIL_DATA)
         .then(() => {
           expect(slack.info_queue.length).to.equal(1)
-          expect(emailSender.__notifyPost).to.have.been.calledWith('POST_ID')
+          expect(emailSender.__notifyPost).to.have.been.calledWith({
+            postId: 'POST_ID',
+            excludeUsers: ['nurym']
+          })
 
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
@@ -747,7 +756,10 @@ describe('EmailSender', () => {
             expect(attachment.name).to.equal('cat-icon.png')
             expect(attachment.size).to.equal(140)
 
-            expect(emailSender.__notifyPost).to.have.been.calledWith('POST_ID')
+            expect(emailSender.__notifyPost).to.have.been.calledWith({
+              postId: 'POST_ID',
+              excludeUsers: ['qiming']
+            })
             done()
           })
           .catch(err => done(err))
