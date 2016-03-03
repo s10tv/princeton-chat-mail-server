@@ -156,7 +156,11 @@ app.post('/web-message', (req, res) => {
     })
 })
 
-app.post('/post/notify-users', (req, res) => {
+app.post('/notify/new-post', (req, res) => {
+
+})
+
+app.post('/notify/reply', (req, res) => {
   const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[post/notify-users] postId is not found in the request');
@@ -166,12 +170,12 @@ app.post('/post/notify-users', (req, res) => {
   const excludeUsers = req.body.excludeUsers || []
 
   return NotificationSender.notifyUsersFollowingPost({postId, excludeUsers})
-  .then(() => {
-    return handleSuccess(`Notified users of postId=${postId}`, res)
-  })
-  .catch(err => {
-    return handleError(err, res);
-  })
+    .then(() => {
+      return handleSuccess(`Notified users of postId=${postId}`, res)
+    })
+    .catch(err => {
+      return handleError(err, res);
+    })
 })
 
 app.use(raygunClient.expressHandler);

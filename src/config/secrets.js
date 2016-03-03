@@ -6,7 +6,7 @@ export default {
   env: process.env.ENV || 'dev',
 
   // URL to hit to trigger notifications
-  notificationsUrl: process.env.NOTIFICATIONS_URL || '/',
+  notificationServer: process.env.NOTIFIER_BASE_URL || '/',
 
   // for which audience (will control localization settings) is this for?
   // [ s10, princeton, classicaleffect ]

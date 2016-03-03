@@ -61,8 +61,7 @@ export default class Notifier {
             upsertNotification = Object.assign({}, notification.toObject(), {
               status: 'active',
               reason: this.reasonGenerator.generateReason(notification, 'reply'),
-              createdAt: new Date(),
-              lastActionTimestamp: new Date()
+              createdAt: new Date()
             })
           } else {
             upsertNotification = {

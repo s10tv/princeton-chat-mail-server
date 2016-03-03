@@ -178,7 +178,7 @@ describe('EmailSender', () => {
       mailer = new MockMailer()
       slack = new MockSlack()
       emailSender = new EmailSender(mailer, slack)
-      emailSender.__notifyPost = sinon.spy()
+      emailSender.__notifyReplyToPost = sinon.spy()
     })
 
     beforeEach((done) => {
@@ -236,7 +236,7 @@ describe('EmailSender', () => {
         .handleNewPostFromWeb('test-post-two')
         .then(() => {
           expect(slack.info_queue.length).to.equal(1)
-          expect(emailSender.__notifyPost).not.to.have.been.called
+          expect(emailSender.__notifyReplyToPost).not.to.have.been.called
 
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
@@ -271,7 +271,7 @@ describe('EmailSender', () => {
       mailer = new MockMailer();
       slack = new MockSlack()
       emailSender = new EmailSender(mailer, slack)
-      emailSender.__notifyPost = sinon.spy()
+      emailSender.__notifyReplyToPost = sinon.spy()
     })
 
     beforeEach((done) => {
@@ -320,7 +320,7 @@ describe('EmailSender', () => {
       emailSender
         .handleNewMessageFromWeb('dianas-message')
         .then(() => {
-          expect(emailSender.__notifyPost).to.have.been.calledWith({
+          expect(emailSender.__notifyReplyToPost).to.have.been.calledWith({
             postId: 'super-bowl',
             excludeUsers: ['dchau']
           })
@@ -362,7 +362,7 @@ describe('EmailSender', () => {
       mailer = new MockMailer()
       slack = new MockSlack()
       emailSender = new EmailSender(mailer, slack)
-      emailSender.__notifyPost = sinon.spy()
+      emailSender.__notifyReplyToPost = sinon.spy()
     })
 
     beforeEach((done) => {
@@ -488,7 +488,7 @@ describe('EmailSender', () => {
             expect(topicId).to.equal('cookies')
 
             expect(slack.info_queue.length).to.equal(1)
-            expect(emailSender.__notifyPost).not.to.have.been.called
+            expect(emailSender.__notifyReplyToPost).not.to.have.been.called
             done()
           })
           .catch(err => done(err))
@@ -626,7 +626,7 @@ describe('EmailSender', () => {
         emailSender.handleEmailReply(REPLY_ALL_MAIL_DATA)
         .then(() => {
           expect(slack.info_queue.length).to.equal(1)
-          expect(emailSender.__notifyPost).to.have.been.calledWith({
+          expect(emailSender.__notifyReplyToPost).to.have.been.calledWith({
             postId: 'd2cba2d8-4206-48cd-9fd4-3d8dca31a8ea',
             excludeUsers: ['qiming']
           })
@@ -683,7 +683,7 @@ describe('EmailSender', () => {
         emailSender.handleEmailReply(INBOUND_MAIL_DATA)
         .then(() => {
           expect(slack.info_queue.length).to.equal(1)
-          expect(emailSender.__notifyPost).to.have.been.calledWith({
+          expect(emailSender.__notifyReplyToPost).to.have.been.calledWith({
             postId: 'POST_ID',
             excludeUsers: ['nurym']
           })
@@ -756,7 +756,7 @@ describe('EmailSender', () => {
             expect(attachment.name).to.equal('cat-icon.png')
             expect(attachment.size).to.equal(140)
 
-            expect(emailSender.__notifyPost).to.have.been.calledWith({
+            expect(emailSender.__notifyReplyToPost).to.have.been.calledWith({
               postId: 'POST_ID',
               excludeUsers: ['qiming']
             })

@@ -60,9 +60,9 @@ describe('Server', () => {
       });
   });
 
-  it('should handle /post/notify-users', (done) => {
+  it('should handle /notify/reply', (done) => {
     request('http://localhost:5000')
-      .post('/post/notify-users')
+      .post('/notify/reply')
       .send({ postId: 'post-id' })
       .expect(200)
       .end(function(err, res) {
