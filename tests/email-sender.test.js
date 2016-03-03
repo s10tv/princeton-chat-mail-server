@@ -120,7 +120,6 @@ describe('EmailSender', () => {
     })
 
     it('should render the footer with correct links', (done) => {
-
       const expectedReturn =  `
         <p>starbucks</p>
         <p style="padding-top: 15px">
@@ -178,7 +177,7 @@ describe('EmailSender', () => {
       mailer = new MockMailer()
       slack = new MockSlack()
       emailSender = new EmailSender(mailer, slack)
-      emailSender.__notifyReplyToPost = sinon.spy()
+      emailSender.__notifyNewPost = sinon.spy()
     })
 
     beforeEach((done) => {
@@ -236,7 +235,10 @@ describe('EmailSender', () => {
         .handleNewPostFromWeb('test-post-two')
         .then(() => {
           expect(slack.info_queue.length).to.equal(1)
-          expect(emailSender.__notifyReplyToPost).not.to.have.been.called
+          expect(emailSender.__notifyNewPost).to.have.been.calledWith({
+            postId: 'test-post-two',
+            excludeUsers: ['qiming']
+          })
 
           expect(mailer.mailQueue.length).to.equal(1);
           const [mail] = mailer.mailQueue;
@@ -363,6 +365,7 @@ describe('EmailSender', () => {
       slack = new MockSlack()
       emailSender = new EmailSender(mailer, slack)
       emailSender.__notifyReplyToPost = sinon.spy()
+      emailSender.__notifyNewPost = sinon.spy()
     })
 
     beforeEach((done) => {
@@ -475,6 +478,11 @@ describe('EmailSender', () => {
             return find(Post, {})
           })
           .then(posts => {
+            expect(emailSender.__notifyNewPost).to.have.been.calledWith({
+              excludeUsers: ['nurym'],
+              postId: sinon.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/) //uuid
+            })
+
             expect(posts.length).to.equal(1)
             const [post] = posts;
 
@@ -514,6 +522,11 @@ describe('EmailSender', () => {
             .handleEmailReply(POST_INPUT)
         })
         .then(() => {
+          expect(emailSender.__notifyNewPost).to.have.been.calledWith({
+            excludeUsers: ['nurym'],
+            postId: sinon.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/) //uuid
+          })
+
           expect(mailer.mailQueue.length).to.equal(1);
           const [email] = mailer.mailQueue;
 
@@ -537,6 +550,7 @@ describe('EmailSender', () => {
             .catch(() => {
               return count(Post, {})
               .then(postCount => {
+                expect(emailSender.__notifyNewPost).not.to.have.been.called
                 expect(postCount).to.equal(0);
                 expect(mailer.mailQueue.length).to.equal(1);
                 const [email] = mailer.mailQueue;

@@ -324,6 +324,7 @@ export default class EmailSender {
     INFO('emailsToSend:', emailsToSend)
 
     await this.mailer.sendBatchEmails(emailsToSend);
+    await this.__notifyNewPost({ postId: this.post._id, excludeUsers: [this.postOwner._id]})
     await this.slack.info(`New post from ${fromName} (${fromEmail}). \
       <${secrets.url}/topics/${topicId}/${this.post._id}|post>`)
   }
@@ -501,6 +502,20 @@ export default class EmailSender {
     return new Promise((resolve, reject) => {
       request({
         url: `${secrets.notificationServer}/notify/reply`,
+        method: 'POST',
+        json: true,
+        body: {options}
+      }, (err, res) => {
+        if (err) { return reject(err) }
+        return resolve(res)
+      })
+    })
+  }
+
+  __notifyNewPost(options) {
+    return new Promise((resolve, reject) => {
+      request({
+        url: `${secrets.notificationServer}/notify/new-post`,
         method: 'POST',
         json: true,
         body: {options}
