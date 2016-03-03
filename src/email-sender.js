@@ -504,7 +504,7 @@ export default class EmailSender {
         url: `${secrets.notificationServer}/notify/reply`,
         method: 'POST',
         json: true,
-        body: {options}
+        body: options
       }, (err, res) => {
         if (err) { return reject(err) }
         return resolve(res)
@@ -518,7 +518,7 @@ export default class EmailSender {
         url: `${secrets.notificationServer}/notify/new-post`,
         method: 'POST',
         json: true,
-        body: {options}
+        body: options
       }, (err, res) => {
         if (err) { return reject(err) }
         return resolve(res)

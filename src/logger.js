@@ -4,13 +4,13 @@ require('winston-logstash');
 
 const mockLogger = {
   info: (...m) => {
-    if (process.env.DEBUG === 1) {
+    if (process.env.DEBUG) {
       console.log(m)
     }
   },
 
   error: (...m) => {
-    if (process.env.DEBUG === 1) {
+    if (process.env.DEBUG) {
       console.log(m)
     }
   }
@@ -18,10 +18,7 @@ const mockLogger = {
 
 class Logger {
   constructor () {
-    if (process.env.ENV === 'dev' || process.env.ENV === undefined) {
-      this.logger = mockLogger
-    } else {
-      this.logger = mockLogger
+    this.logger = mockLogger
       //this.logger = new (winston.Logger)({
       //  transports: [
       //    new (winston.transports.Logstash)({
@@ -32,7 +29,6 @@ class Logger {
       //    })
       //  ]
       //})
-    }
   }
 
   info (...args) {

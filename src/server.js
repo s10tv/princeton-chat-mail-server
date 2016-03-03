@@ -154,7 +154,7 @@ app.post('/web-message', (req, res) => {
 })
 
 app.post('/notify/new-post', (req, res) => {
-  logger.info('/notify/new-post', req.body)
+  logger.info('/notify/new-post', JSON.stringify(req.body))
   const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[notify/new-post] postId is not found in the request');
@@ -173,7 +173,7 @@ app.post('/notify/new-post', (req, res) => {
 })
 
 app.post('/notify/reply', (req, res) => {
-  logger.info('/notify/reply', req.body)
+  logger.info('/notify/reply', JSON.stringify(req.body))
   const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[notify/reply] postId is not found in the request');
