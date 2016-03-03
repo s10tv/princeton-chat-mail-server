@@ -43,6 +43,17 @@ export function find(schema, query) {
   return schema.find(query)
 }
 
+export function findOne(schema, query) {
+  return new Promise((resolve, reject) => {
+    schema.findOne(query, (err, object) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(object);
+    });
+  });
+}
+
 export function upsert(schema, identifier, query) {
   return new Promise((resolve, reject) => {
     schema.update(identifier, query, { upsert: true }, (err) => {

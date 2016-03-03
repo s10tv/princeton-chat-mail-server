@@ -90,4 +90,26 @@ describe('Notifier', () => {
       })
       .catch(err => done(err))
   })
+
+  describe('if an existing notification already exists for the post', () => {
+    beforeEach((done) => {
+      new Notification({
+        _id: 'existing-notification',
+        postId: 'im-awesome',
+        ownerId: 'qiming'
+      }).save(done)
+    })
+    it('should update existing notification if it exists', (done) => {
+      new Notifier().postNotify({ postId: 'im-awesome' })
+        .then(() => {
+          return find(Notification, {})
+        })
+        .then((notifications) => {
+          const byId = _.indexBy(notifications, 'ownerId')
+          expect(byId.qiming._id).to.equal('existing-notification')
+          done()
+        })
+        .catch(err => done(err))
+    })
+  })
 })

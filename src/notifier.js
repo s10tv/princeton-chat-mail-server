@@ -1,4 +1,4 @@
-import { upsert, update, find, INFO } from './common'
+import { upsert, update, find, findOne, INFO } from './common'
 import uuid from 'uuid'
 import Topic from './models/topic'
 import Post from './models/post'
@@ -23,13 +23,22 @@ export default class Notifier {
     return Promise.all(users
       .filter((user) => excludeUsers.indexOf(user._id) < 0)
       .map((user) => {
-        const notificationId = uuid.v4()
-        return upsert(Notification, { _id: notificationId}, {
-          _id: notificationId,
-          postId,
-          status: 'active',
-          ownerId: user._id,
-          createdAt: new Date()
+        return findOne(Notification, {postId, ownerId: user._id})
+        .then((notification) => {
+          let notificationId
+          if (notification) {
+            notificationId = notification._id
+          } else {
+            notificationId = uuid.v4()
+          }
+          return upsert(Notification, {_id: notificationId}, {
+            _id: notificationId,
+            postId,
+            ownerId: user._id,
+            status: 'active',
+            createdAt: new Date(),
+            lastActionTimestamp: new Date()
+          })
         })
     }))
   }

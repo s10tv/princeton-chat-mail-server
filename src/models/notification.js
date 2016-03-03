@@ -10,6 +10,7 @@ var NotificationSchema = new Schema({
 
   status: String,
 
+  lastActionTimestamp: { type: Date, required: true, default: new Date() },
   createdAt: { type: Date, required: true, default: new Date() }
 });
 
