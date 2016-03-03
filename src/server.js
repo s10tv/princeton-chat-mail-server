@@ -120,16 +120,13 @@ app.post('/email-reply', m.any(), (req, res) => {
 })
 
 app.post('/web-post', (req, res) => {
-  logger.info('web-post');
-  logger.info(req.body);
-
+  logger.info('/web-post', req.body)
   const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[web-post] postId was not found in the request');
     return handleError(error, res)
   }
 
-  logger.info(`[web-post] request with postId=${postId}`)
   return Sender.handleNewPostFromWeb(postId)
     .then(() => {
       return handleSuccess('Web-Post success', res)
@@ -140,13 +137,13 @@ app.post('/web-post', (req, res) => {
 })
 
 app.post('/web-message', (req, res) => {
+  logger.info('/web-message', req.body)
   const messageId = req.body.messageId;
   if (!messageId) {
     let error = new Error('[web-message] messageId is not found in the request');
     return handleError(error, res)
   }
 
-  logger.info(`[web-message] request with messageId=${messageId}`)
   return Sender.handleNewMessageFromWeb(messageId)
     .then(() => {
       return handleSuccess('Web-Message success', res)
@@ -157,6 +154,7 @@ app.post('/web-message', (req, res) => {
 })
 
 app.post('/notify/new-post', (req, res) => {
+  logger.info('/notify/new-post', req.body)
   const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[notify/new-post] postId is not found in the request');
@@ -175,6 +173,7 @@ app.post('/notify/new-post', (req, res) => {
 })
 
 app.post('/notify/reply', (req, res) => {
+  logger.info('/notify/reply', req.body)
   const postId = req.body.postId;
   if (!postId) {
     let error = new Error('[notify/reply] postId is not found in the request');
