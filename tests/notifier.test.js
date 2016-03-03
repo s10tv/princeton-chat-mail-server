@@ -2,12 +2,27 @@ import { upsert, update, find, INFO } from '../src/common'
 import mongoose from 'mongoose'
 import {expect} from 'chai'
 import _ from 'underscore'
-import Notifier from '../src/notifier'
+import Notifier, {ReasonGenerator} from '../src/notifier'
 import Post from '../src/models/post'
 import Notification from '../src/models/notification'
 import User from '../src/models/user'
 
 const dbURI = 'mongodb://localhost:27017/test';
+
+describe('Reason Generator', () => {
+  const generator = new ReasonGenerator()
+  it ('should return original reason if notification is not found', () => {
+    expect(generator.generateReason(null, 'post')).to.equal('post')
+  })
+
+  it ('should return original reason if notification has no reason', () => {
+    expect(generator.generateReason({}, 'post')).to.equal('post')
+  })
+
+  it ('should return the more important of the 2 reasons', () => {
+    expect(generator.generateReason({ reason: 'post' }, 'mention')).to.equal('mention')
+  })
+})
 
 describe('Notifier', () => {
   before(function (done) {

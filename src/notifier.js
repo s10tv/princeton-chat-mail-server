@@ -6,6 +6,32 @@ import Notification from './models/notification'
 import User from './models/user'
 import ReplyParser from './reply-parser'
 
+// exported for testing only
+export class ReasonGenerator {
+  constructor() {
+    this.reasonImportanceMap = {
+      message : 0,
+      post : 5,
+      topic: 6,
+      mention: 10
+    }
+  }
+
+  generateReason(existingNotification, reason) {
+    if (!existingNotification) {
+      return reason
+    }
+
+    if (!existingNotification.reason) {
+      return reason
+    }
+
+    return this.reasonImportanceMap[existingNotification] > this.reasonImportanceMap[reason]
+      ? existingNotification.reason
+      : reason
+  }
+}
+
 export class MockNotifier {
   constructor() {
     this.postsToNotify = []
@@ -18,6 +44,11 @@ export class MockNotifier {
 }
 
 export default class Notifier {
+
+  constructor(reasonGenerator) {
+    this.reasonGenerator = reasonGenerator || new ReasonGenerator()
+  }
+
   async postNotify({postId, excludeUsers = []}) {
     const users = await find(User, { followingPosts: postId })
     return Promise.all(users
@@ -29,6 +60,7 @@ export default class Notifier {
           if (notification) {
             upsertNotification = Object.assign({}, notification.toObject(), {
               status: 'active',
+              reason: this.reasonGenerator.generateReason(notification, 'post'),
               createdAt: new Date(),
               lastActionTimestamp: new Date()
             })
