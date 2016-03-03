@@ -500,7 +500,7 @@ export default class EmailSender {
   __notifyReplyToPost(options) {
     return new Promise((resolve, reject) => {
       request({
-        url: `${secrets.notificationServer}/notify/new-post`,
+        url: `${secrets.notificationServer}/notify/reply`,
         method: 'POST',
         json: true,
         body: {options}
