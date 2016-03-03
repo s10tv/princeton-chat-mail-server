@@ -33,9 +33,9 @@ describe('Server', () => {
       .send(POSTMARK_DATA)
       .expect(200)
       .end(function(err, res) {
-        expect(Sender.emailBody).to.deep.equal({"test": "true"});
+        expect(Sender.emailBody).to.deep.equal({"test": "true"})
         done()
-      });
+      })
   })
 
   it('should handle /web-post', (done) => {
@@ -44,10 +44,10 @@ describe('Server', () => {
       .send({ postId: 'post-id' })
       .expect(200)
       .end(function(err, res) {
-        expect(Sender.postId).to.equal('post-id');
+        expect(Sender.postId).to.equal('post-id')
         done()
-      });
-  });
+      })
+  })
 
   it('should handle /web-message', (done) => {
     request('http://localhost:5000')
@@ -55,10 +55,10 @@ describe('Server', () => {
       .send({ messageId: 'message-id' })
       .expect(200)
       .end(function(err, res) {
-        expect(Sender.messageId).to.equal('message-id');
+        expect(Sender.messageId).to.equal('message-id')
         done()
-      });
-  });
+      })
+  })
 
   it('should handle /notify/reply', (done) => {
     request('http://localhost:5000')
@@ -69,10 +69,10 @@ describe('Server', () => {
         expect(NotificationSender.postsToNotify).to.deep.equal([{
           postId: 'post-id',
           excludeUsers: []
-        }]);
+        }])
         done()
-      });
-  });
+      })
+  })
 
   it('should handle /mailgun/pulse', (done) => {
     request('http://localhost:5000')
@@ -84,8 +84,8 @@ describe('Server', () => {
         const [msg] = Slack.queue
         expect(msg).to.equal('fang@taylrapp.com opened our mail (20160209053519.16564.71791@dev.topics.princeton.chat)')
         done()
-      });
-  });
+      })
+  })
 
   it('should have special handilng for erroneous /mailgun/pulse', (done) => {
     request('http://localhost:5000')
@@ -98,6 +98,6 @@ describe('Server', () => {
         const [msg] = Slack.attention_queue
         expect(msg).to.equal('fang@taylrapp.com dropped our mail (20160209053519.16564.71791@dev.topics.princeton.chat)')
         done()
-      });
-  });
+      })
+  })
 })
