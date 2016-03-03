@@ -65,10 +65,26 @@ describe('Server', () => {
       .post('/notify/reply')
       .send({ postId: 'post-id' })
       .expect(200)
-      .end(function(err, res) {
+      .end(() => {
         expect(NotificationSender.postsToNotify).to.deep.equal([{
           postId: 'post-id',
-          excludeUsers: []
+          excludeUsers: undefined,
+          reason: 'reply' // !important
+        }])
+        done()
+      })
+  })
+
+  it('should handle /notify/new-post', (done) => {
+    request('http://localhost:5000')
+      .post('/notify/new-post')
+      .send({ postId: 'post-id' })
+      .expect(200)
+      .end(() => {
+        expect(NotificationSender.postsToNotify).to.deep.equal([{
+          postId: 'post-id',
+          excludeUsers: undefined,
+          reason: 'newpost' // !important
         }])
         done()
       })

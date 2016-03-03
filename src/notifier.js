@@ -35,6 +35,11 @@ export class ReasonGenerator {
 export class MockNotifier {
   constructor() {
     this.postsToNotify = []
+    this.channelsToNotify = []
+  }
+
+  notifyUsersSubscribedToChannel(options) {
+
   }
 
   notifyUsersFollowingPost(options) {
@@ -49,7 +54,7 @@ export default class Notifier {
     this.reasonGenerator = reasonGenerator || new ReasonGenerator()
   }
 
-  async notifyUsersFollowingPost({postId, excludeUsers = []}) {
+  async notifyUsersFollowingPost({postId, excludeUsers = [], reason = 'reply'}) {
     const users = await find(User, { followingPosts: postId })
     return Promise.all(users
       .filter((user) => excludeUsers.indexOf(user._id) < 0)
@@ -60,7 +65,7 @@ export default class Notifier {
           if (notification) {
             upsertNotification = Object.assign({}, notification.toObject(), {
               status: 'active',
-              reason: this.reasonGenerator.generateReason(notification, 'reply'),
+              reason: this.reasonGenerator.generateReason(notification, reason),
               createdAt: new Date()
             })
           } else {
@@ -68,7 +73,7 @@ export default class Notifier {
               _id: uuid.v4(),
               postId,
               ownerId: user._id,
-              reason: 'reply',
+              reason: reason,
               status: 'active',
               createdAt: new Date()
             }

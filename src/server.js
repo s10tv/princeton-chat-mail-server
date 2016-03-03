@@ -157,25 +157,39 @@ app.post('/web-message', (req, res) => {
 })
 
 app.post('/notify/new-post', (req, res) => {
+  const postId = req.body.postId;
+  if (!postId) {
+    let error = new Error('[notify/new-post] postId is not found in the request');
+    return handleError(error, res)
+  }
 
+  return NotificationSender.notifyUsersFollowingPost({
+    postId, excludeUsers: req.body.excludeUsers, reason: 'newpost'
+  })
+  .then(() => {
+    return handleSuccess(`Notified (new post) users of postId=${postId}`, res)
+  })
+  .catch(err => {
+    return handleError(err, res);
+  })
 })
 
 app.post('/notify/reply', (req, res) => {
   const postId = req.body.postId;
   if (!postId) {
-    let error = new Error('[post/notify-users] postId is not found in the request');
+    let error = new Error('[notify/reply] postId is not found in the request');
     return handleError(error, res)
   }
 
-  const excludeUsers = req.body.excludeUsers || []
-
-  return NotificationSender.notifyUsersFollowingPost({postId, excludeUsers})
-    .then(() => {
-      return handleSuccess(`Notified users of postId=${postId}`, res)
-    })
-    .catch(err => {
-      return handleError(err, res);
-    })
+  return NotificationSender.notifyUsersFollowingPost({
+    postId, excludeUsers: req.body.excludeUsers, reason: 'reply'
+  })
+  .then(() => {
+    return handleSuccess(`Notified (reply) users of postId=${postId}`, res)
+  })
+  .catch(err => {
+    return handleError(err, res);
+  })
 })
 
 app.use(raygunClient.expressHandler);
