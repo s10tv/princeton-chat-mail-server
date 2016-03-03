@@ -497,13 +497,13 @@ export default class EmailSender {
     }
   }
 
-  __notifyPost(postId) {
+  __notifyPost(options) {
     return new Promise((resolve, reject) => {
       request({
         url: secrets.notificationsUrl,
         method: 'POST',
         json: true,
-        body: {postId}
+        body: {options}
       }, (err, res) => {
         if (err) { return reject(err) }
         return resolve(res)

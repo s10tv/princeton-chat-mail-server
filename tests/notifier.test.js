@@ -76,7 +76,7 @@ describe('Notifier', () => {
   }
 
   it ('should upsert a notification for each user that follows the post', (done) => {
-    new Notifier().postNotify({ postId: 'im-awesome' })
+    new Notifier().notifyUsersFollowingPost({ postId: 'im-awesome' })
     .then(() => {
       return find(Notification, {})
     })
@@ -93,7 +93,7 @@ describe('Notifier', () => {
   })
 
   it('should exclude users in excludeUsers', (done) => {
-    new Notifier().postNotify({ postId: 'im-awesome', excludeUsers: ['qiming'] })
+    new Notifier().notifyUsersFollowingPost({ postId: 'im-awesome', excludeUsers: ['qiming'] })
       .then(() => {
         return find(Notification, {})
       })
@@ -112,12 +112,12 @@ describe('Notifier', () => {
         _id: 'existing-notification',
         postId: 'im-awesome',
         ownerId: 'qiming',
-        reason: 'post',
+        reason: 'newpost',
         status: 'active'
       }).save(done)
     })
     it('should update existing notification if it exists', (done) => {
-      new Notifier().postNotify({ postId: 'im-awesome' })
+      new Notifier().notifyUsersFollowingPost({ postId: 'im-awesome' })
         .then(() => {
           return find(Notification, {})
         })

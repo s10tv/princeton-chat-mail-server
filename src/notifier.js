@@ -10,9 +10,9 @@ import ReplyParser from './reply-parser'
 export class ReasonGenerator {
   constructor() {
     this.reasonImportanceMap = {
-      message : 0,
-      post : 5,
-      topic: 6,
+      reply: 0,
+      newpost: 5,
+      newchannel: 6,
       mention: 10
     }
   }
@@ -37,7 +37,7 @@ export class MockNotifier {
     this.postsToNotify = []
   }
 
-  postNotify(options) {
+  notifyUsersFollowingPost(options) {
     this.postsToNotify.push(options)
     return Promise.resolve(true)
   }
@@ -49,7 +49,7 @@ export default class Notifier {
     this.reasonGenerator = reasonGenerator || new ReasonGenerator()
   }
 
-  async postNotify({postId, excludeUsers = []}) {
+  async notifyUsersFollowingPost({postId, excludeUsers = []}) {
     const users = await find(User, { followingPosts: postId })
     return Promise.all(users
       .filter((user) => excludeUsers.indexOf(user._id) < 0)
@@ -60,7 +60,7 @@ export default class Notifier {
           if (notification) {
             upsertNotification = Object.assign({}, notification.toObject(), {
               status: 'active',
-              reason: this.reasonGenerator.generateReason(notification, 'post'),
+              reason: this.reasonGenerator.generateReason(notification, 'reply'),
               createdAt: new Date(),
               lastActionTimestamp: new Date()
             })
@@ -69,7 +69,7 @@ export default class Notifier {
               _id: uuid.v4(),
               postId,
               ownerId: user._id,
-              reason: 'post',
+              reason: 'reply',
               status: 'active',
               createdAt: new Date()
             }

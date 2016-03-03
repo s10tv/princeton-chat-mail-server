@@ -10,7 +10,9 @@ var NotificationSchema = new Schema({
 
   status: { type: String, enum: ['active', 'read'] },
 
-  reason: { type: String, enum: ['post', 'message', 'topic', 'mention'], required: true },
+  reason: { type: String,
+    enum: ['newpost', 'reply', 'newchannel', 'mention'],
+    required: true },
 
   lastActionTimestamp: { type: Date, required: true, default: new Date() },
   createdAt: { type: Date, required: true, default: new Date() }

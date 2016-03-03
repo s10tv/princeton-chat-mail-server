@@ -165,7 +165,7 @@ app.post('/post/notify-users', (req, res) => {
 
   const excludeUsers = req.body.excludeUsers || []
 
-  return NotificationSender.postNotify({postId, excludeUsers})
+  return NotificationSender.notifyUsersFollowingPost({postId, excludeUsers})
   .then(() => {
     return handleSuccess(`Notified users of postId=${postId}`, res)
   })
