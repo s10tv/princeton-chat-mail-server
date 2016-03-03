@@ -8,7 +8,9 @@ var NotificationSchema = new Schema({
   // Notifications from posts.
   postId: String,
 
-  status: String,
+  status: { type: String, enum: ['active', 'read'] },
+
+  reason: { type: String, enum: ['post', 'message', 'topic', 'mention'], required: true },
 
   lastActionTimestamp: { type: Date, required: true, default: new Date() },
   createdAt: { type: Date, required: true, default: new Date() }

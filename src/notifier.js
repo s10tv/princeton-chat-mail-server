@@ -25,20 +25,24 @@ export default class Notifier {
       .map((user) => {
         return findOne(Notification, {postId, ownerId: user._id})
         .then((notification) => {
-          let notificationId
+          let upsertNotification
           if (notification) {
-            notificationId = notification._id
+            upsertNotification = Object.assign({}, notification.toObject(), {
+              status: 'active',
+              createdAt: new Date(),
+              lastActionTimestamp: new Date()
+            })
           } else {
-            notificationId = uuid.v4()
+            upsertNotification = {
+              _id: uuid.v4(),
+              postId,
+              ownerId: user._id,
+              reason: 'post',
+              status: 'active',
+              createdAt: new Date()
+            }
           }
-          return upsert(Notification, {_id: notificationId}, {
-            _id: notificationId,
-            postId,
-            ownerId: user._id,
-            status: 'active',
-            createdAt: new Date(),
-            lastActionTimestamp: new Date()
-          })
+          return upsert(Notification, {_id: upsertNotification._id}, upsertNotification)
         })
     }))
   }

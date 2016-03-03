@@ -96,7 +96,9 @@ describe('Notifier', () => {
       new Notification({
         _id: 'existing-notification',
         postId: 'im-awesome',
-        ownerId: 'qiming'
+        ownerId: 'qiming',
+        reason: 'post',
+        status: 'active'
       }).save(done)
     })
     it('should update existing notification if it exists', (done) => {
